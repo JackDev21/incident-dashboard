@@ -1,4 +1,4 @@
-import styles from "./Badge.module.scss"
+import styles from "@/components/ui/Badge/Badge.module.scss"
 
 type BadgeVariant = "neutral" | "success" | "warning" | "danger"
 

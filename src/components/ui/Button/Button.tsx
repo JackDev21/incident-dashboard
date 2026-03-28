@@ -1,4 +1,4 @@
-import styles from "./Button.module.scss"
+import styles from "@/components/ui/Button/Button.module.scss"
 
 type ButtonVariant = "primary" | "secondary"
 type ButtonProps = {

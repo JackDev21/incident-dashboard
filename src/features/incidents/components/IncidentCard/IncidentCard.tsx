@@ -1,8 +1,8 @@
-import { Card } from "../../../../components/ui/Card/Card"
-import { Badge } from "../../../../components/ui/Badge/Badge"
-import styles from "./IncidentCard.module.scss"
+import { Card } from "@/components/ui/Card/Card"
+import { Badge } from "@/components/ui/Badge/Badge"
+import styles from "@/features/incidents/components/IncidentCard/IncidentCard.module.scss"
 
-import type { Incident, IncidentPriority, IncidentStatus } from "../../types/incident.types"
+import type { Incident, IncidentPriority, IncidentStatus } from "@/features/incidents/types/incident.types"
 type IncidentCardProps = {
   incident: Incident
 }
