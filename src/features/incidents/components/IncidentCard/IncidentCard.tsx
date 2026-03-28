@@ -1,19 +1,53 @@
 import { Card } from "../../../../components/ui/Card/Card"
-import type { Incident } from "../../types/incident.types"
+import { Badge } from "../../../../components/ui/Badge/Badge"
+import styles from "./IncidentCard.module.scss"
 
+import type { Incident, IncidentPriority, IncidentStatus } from "../../types/incident.types"
 type IncidentCardProps = {
   incident: Incident
+}
+
+const getStatusVariant = (status: IncidentStatus) => {
+  switch (status) {
+    case "open":
+      return "danger"
+    case "in_progress":
+      return "warning"
+    case "resolved":
+      return "success"
+    default:
+      return "neutral"
+  }
+}
+
+const getPriorityVariant = (priority: IncidentPriority) => {
+  switch (priority) {
+    case "high":
+      return "danger"
+    case "medium":
+      return "warning"
+    case "low":
+      return "success"
+    default:
+      return "neutral"
+  }
 }
 
 export const IncidentCard = ({ incident }: IncidentCardProps) => {
   return (
     <Card>
-      <h3>{incident.title}</h3>
+      <div className={styles.header}>
+        <h3>{incident.title}</h3>
+
+        <div className={styles.badges}>
+          <Badge label={incident.status} variant={getStatusVariant(incident.status)} />
+          <Badge label={incident.priority} variant={getPriorityVariant(incident.priority)} />
+        </div>
+      </div>
+
       <p>{incident.description}</p>
 
-      <p>Status: {incident.status}</p>
-      <p>Priority:{incident.priority}</p>
-      <p>Assignee: {incident.assignee}</p>
+      <p className={styles.assignee}>Assignee: {incident.assignee}</p>
     </Card>
   )
 }
