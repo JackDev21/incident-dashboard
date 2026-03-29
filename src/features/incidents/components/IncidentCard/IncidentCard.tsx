@@ -47,7 +47,7 @@ export const IncidentCard = ({ incident }: IncidentCardProps) => {
 
       <p>{incident.description}</p>
 
-      <p className={styles.assignee}>Assignee: {incident.assignee}</p>
+      <p className={styles.assignee}>Assigned to: {incident.assignee}</p>
     </Card>
   )
 }

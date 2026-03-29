@@ -3,8 +3,8 @@ import type { Incident } from "@/features/incidents/types/incident.types"
 export const incidentsMock: Incident[] = [
   {
     id: "1",
-    title: "Error al iniciar sesión",
-    description: "Algunos usuarios no pueden acceder a la aplicación con sus credenciales.",
+    title: "Login error",
+    description: "Some users cannot access the application with their credentials.",
     status: "open",
     priority: "high",
     assignee: "Jose",
@@ -12,8 +12,8 @@ export const incidentsMock: Incident[] = [
   },
   {
     id: "2",
-    title: "Fallo visual en el dashboard",
-    description: "Los badges de estado se desalinean en pantallas pequeñas.",
+    title: "Visual issue in the dashboard",
+    description: "Status badges become misaligned on small screens.",
     status: "in_progress",
     priority: "medium",
     assignee: "Ana",
@@ -21,8 +21,8 @@ export const incidentsMock: Incident[] = [
   },
   {
     id: "3",
-    title: "Notificación duplicada",
-    description: "Se envían notificaciones push duplicadas al publicar contenido.",
+    title: "Duplicate notification",
+    description: "Duplicate push notifications are sent when publishing content.",
     status: "resolved",
     priority: "low",
     assignee: "Carlos",

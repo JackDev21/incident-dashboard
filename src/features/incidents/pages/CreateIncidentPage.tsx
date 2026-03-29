@@ -1,3 +1,3 @@
 export const CreateIncidentPage = () => {
-  return <h2>Create Incident Page</h2>
+  return <h2>Create Incident</h2>
 }

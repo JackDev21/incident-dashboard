@@ -1,3 +1,3 @@
 export const IncidentDetailPage = () => {
-  return <h2>Incident Detail Page</h2>
+  return <h2>Incident Details</h2>
 }

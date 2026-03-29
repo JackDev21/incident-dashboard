@@ -1,12 +1,12 @@
 # Incident Dashboard
 
-Aplicación frontend desarrollada con React y TypeScript para la gestión de incidencias.
+Frontend application built with React and TypeScript for incident management.
 
-Este proyecto está orientado a demostrar buenas prácticas en desarrollo frontend, incluyendo arquitectura modular, separación de responsabilidades, componentes reutilizables y tipado fuerte.
+This project is designed to demonstrate frontend best practices, including modular architecture, separation of concerns, reusable components, and strong typing.
 
 ---
 
-## 🚀 Tecnologías
+## 🚀 Technologies
 
 - React
 - TypeScript
@@ -18,140 +18,140 @@ Este proyecto está orientado a demostrar buenas prácticas en desarrollo fronte
 
 ---
 
-## 🎯 Objetivo del proyecto
+## 🎯 Project Goal
 
-El objetivo principal es simular una aplicación real aplicando:
+The main goal is to simulate a real application by applying:
 
-- Arquitectura frontend escalable
-- Componentes reutilizables (UI layer)
-- Separación entre presentación, lógica y acceso a datos
-- Modelado de dominio con TypeScript
-- Base para testing unitario
+- Scalable frontend architecture
+- Reusable UI components
+- Separation between presentation, logic, and data access
+- Domain modeling with TypeScript
+- A foundation for unit testing
 
 ---
 
-## 🧠 Arquitectura
+## 🧠 Architecture
 
-El proyecto sigue una estructura basada en **features (feature-based architecture)**:
+The project follows a **feature-based architecture**:
 
 ```txt
 src/
-  app/                # Configuración global (router)
+  app/                # Global configuration (router)
   components/
-    ui/               # Componentes reutilizables (Button, Card, etc.)
-    layout/           # Componentes de layout (estructura global)
+    ui/               # Reusable components (Button, Card, etc.)
+    layout/           # Layout components (global structure)
   features/
-    incidents/        # Dominio de incidencias
-      components/     # Componentes de dominio (IncidentCard)
-      pages/          # Vistas (listado, detalle, creación)
-      services/       # Acceso a datos (mock / API)
-      mocks/          # Datos simulados
-      types/          # Tipos del dominio
-  styles/             # Estilos globales
+    incidents/        # Incident domain
+      components/     # Domain components (IncidentCard)
+      pages/          # Views (list, detail, creation)
+      services/       # Data access (mock / API)
+      mocks/          # Mock data
+      types/          # Domain types
+  styles/             # Global styles
 ```
 
 ---
 
-## 🧩 Separación de capas
+## 🧩 Layer Separation
 
-Se ha aplicado una separación clara de responsabilidades:
+A clear separation of responsibilities has been applied:
 
-- **UI (presentación)**  
-  Componentes reutilizables y páginas (`components`, `pages`)
+- **UI**
+  Reusable components and pages (`components`, `pages`)
 
-- **Lógica de negocio**  
-  (en evolución, se implementará con hooks y utils)
+- **Business logic**
+  (in progress, to be implemented with hooks and utils)
 
-- **Acceso a datos**  
-  Servicios desacoplados (`services`)
+- **Data access**
+  Decoupled services (`services`)
 
-- **Dominio**  
-  Tipos y entidades (`types`)
+- **Domain**
+  Types and entities (`types`)
 
 ---
 
-## 🔄 Flujo de datos
+## 🔄 Data Flow
 
 ```txt
 UI (pages/components)
         ↓
-Servicios (services)
+Services (services)
         ↓
-Datos (mock / API)
+Data (mock / API)
 ```
 
-La UI nunca accede directamente a los datos.
+The UI never accesses data directly.
 
 ---
 
-## 🧩 Componentes reutilizables
+## 🧩 Reusable Components
 
-Se ha creado una capa de UI base:
+A base UI layer has been created:
 
 - `Button`
 - `Card`
 
-Ejemplo:
+Example:
 
 ```tsx
-<Button label="Crear incidencia" variant="primary" />
+<Button label="Create incident" variant="primary" />
 ```
 
-Características:
+Features:
 
-- Props tipadas
-- Variantes configurables
-- Estilos encapsulados (CSS Modules)
+- Typed props
+- Configurable variants
+- Encapsulated styles (CSS Modules)
 
 ---
 
-## 🎨 Estilos
+## 🎨 Styling
 
 - SCSS (SASS)
 - CSS Modules
 
-Ventajas:
+Benefits:
 
-- Encapsulación de estilos por componente
-- Evita colisiones globales
-- Facilita escalabilidad
+- Component-level style encapsulation
+- Avoids global collisions
+- Makes scaling easier
 
 ---
 
 ## 📄 Feature: Incidents
 
-Funcionalidad principal de la aplicación:
+Main application functionality:
 
-- Listado de incidencias
-- Renderizado mediante componentes de dominio (`IncidentCard`)
-- Carga de datos a través de servicio (`getIncidents`)
-- Uso de estado local (`useState`)
-- Efectos controlados (`useEffect`)
+- Incident list
+- Rendering through domain components (`IncidentCard`)
+- Data loading through service (`getIncidents`)
+- Local state usage (`useState`)
+- Controlled effects (`useEffect`)
 
 ---
 
-## ⚙️ Instalación
+## ⚙️ Installation
 
-### Clonar repositorio
+### Clone the repository
 
 ```bash
-git clone https://github.com/TU_USUARIO/incident-dashboard.git
+git clone https://github.com/YOUR_USERNAME/incident-dashboard.git
 cd incident-dashboard
 ```
 
-### Instalar dependencias
+### Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### Ejecutar en desarrollo
+### Run in development
 
 ```bash
 pnpm dev
 ```
 
-Abrir en navegador:
+Open in browser:
 
 ```text
 http://localhost:5173/
@@ -159,37 +159,37 @@ http://localhost:5173/
 
 ---
 
-## 🧪 Testing (próximamente)
+## 🧪 Testing (coming soon)
 
-El proyecto está preparado para incluir:
+The project is ready to include:
 
-- Tests unitarios de lógica
-- Tests de componentes
-- Tests de interacción
-
----
-
-## 🔧 Buenas prácticas aplicadas
-
-- Separación de responsabilidades
-- Componentes reutilizables
-- Arquitectura modular por features
-- Tipado fuerte con TypeScript
-- Desacoplamiento de la fuente de datos
-- Composición de componentes
+- Unit tests for logic
+- Component tests
+- Interaction tests
 
 ---
 
-## 📌 Enfoque
+## 🔧 Best Practices Applied
 
-Este proyecto no busca solo funcionalidad, sino demostrar:
-
-- cómo estructurar una aplicación frontend real
-- cómo escalar código de forma mantenible
-- cómo trabajar con componentes reutilizables
+- Separation of concerns
+- Reusable components
+- Modular feature-based architecture
+- Strong typing with TypeScript
+- Decoupled data source
+- Component composition
 
 ---
 
-## 👤 Autor
+## 📌 Focus
+
+This project is not only about functionality, but also about showing:
+
+- how to structure a real frontend application
+- how to scale code in a maintainable way
+- how to work with reusable components
+
+---
+
+## 👤 Author
 
 Jose A. Cantó (JackDev)
