@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/Card/Card"
-import { Badge } from "@/components/ui/Badge/Badge"
+import { Badge } from "@/components/ui/Badge"
+import { Card } from "@/components/ui/Card"
 import styles from "@/features/incidents/components/IncidentCard/IncidentCard.module.scss"
 
 import type { Incident, IncidentPriority, IncidentStatus } from "@/features/incidents/types/incident.types"
