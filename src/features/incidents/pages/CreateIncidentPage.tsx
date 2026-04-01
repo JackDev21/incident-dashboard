@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { createIncident } from "../services/incidents.service"
+import styles from "@/features/incidents/pages/CreateIncidentPage.module.scss"
 
 export const CreateIncidentPage = () => {
   const navigate = useNavigate()
@@ -39,7 +40,10 @@ export const CreateIncidentPage = () => {
         <option value="high">High</option>
       </select>
 
-      <Button label="Create incident" />
+      <div className={styles.actions}>
+        <Button label="Create incident" />
+        <Button label="Back to list" variant="secondary" onClick={() => navigate("/")} />
+      </div>
     </form>
   )
 }

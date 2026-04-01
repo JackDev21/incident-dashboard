@@ -2,35 +2,10 @@ import { Badge } from "@/components/ui/Badge"
 import { Card } from "@/components/ui/Card"
 import styles from "@/features/incidents/components/IncidentCard/IncidentCard.module.scss"
 
-import type { Incident, IncidentPriority, IncidentStatus } from "@/features/incidents/types/incident.types"
+import type { Incident } from "@/features/incidents/types/incident.types"
+import { getPriorityVariant, getStatusVariant } from "@/features/incidents/utils/incidentBadgeVariants"
 type IncidentCardProps = {
   incident: Incident
-}
-
-const getStatusVariant = (status: IncidentStatus) => {
-  switch (status) {
-    case "open":
-      return "danger"
-    case "in_progress":
-      return "warning"
-    case "resolved":
-      return "success"
-    default:
-      return "neutral"
-  }
-}
-
-const getPriorityVariant = (priority: IncidentPriority) => {
-  switch (priority) {
-    case "high":
-      return "danger"
-    case "medium":
-      return "warning"
-    case "low":
-      return "success"
-    default:
-      return "neutral"
-  }
 }
 
 export const IncidentCard = ({ incident }: IncidentCardProps) => {
