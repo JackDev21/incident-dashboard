@@ -14,13 +14,12 @@ type IncidentCardProps = {
 
 export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
   const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation() // Evita que el clic navegue al detalle
+    e.stopPropagation() 
     if (window.confirm("Are you sure you want to delete this incident?")) {
       onDelete?.(incident.id)
     }
   }
 
-  // Formatear la fecha si existe
   const formattedDate = incident.createdAt
     ? new Date(incident.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : "Unknown date"

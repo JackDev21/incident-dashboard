@@ -1,0 +1,11 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 720px;
+}
+
+.state {
+  color: var(--text-secondary);
+  font-size: 14px;
+}

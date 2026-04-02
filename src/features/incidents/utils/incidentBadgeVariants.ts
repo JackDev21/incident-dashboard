@@ -4,7 +4,7 @@ export const getStatusVariant = (status: IncidentStatus) => {
   switch (status) {
     case "open":
       return "danger"
-    case "in_progress":
+    case "in progress":
       return "warning"
     case "resolved":
       return "success"

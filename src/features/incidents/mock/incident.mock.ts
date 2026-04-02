@@ -14,7 +14,7 @@ export const incidentsMock: Incident[] = [
     id: "2",
     title: "Visual issue in the dashboard",
     description: "Status badges become misaligned on small screens.",
-    status: "in_progress",
+    status: "in progress",
     priority: "medium",
     assignee: "Ana",
     createdAt: "2026-03-27",

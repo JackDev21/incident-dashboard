@@ -25,7 +25,7 @@ export const Button = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${styles.button} ${styles[variant]} ${className}`}
+      className={`${styles.button} ${variant === "icon" ? styles.iconButton : styles[variant]} ${className}`}
       title={title}
     >
       {icon && <span className={styles.icon}>{icon}</span>}

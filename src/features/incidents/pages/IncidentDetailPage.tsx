@@ -1,7 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom"
+import { ArrowLeft } from "lucide-react"
 import { useIncidentDetails } from "@/features/incidents/hooks/useIncidentDetails"
 import { Button } from "@/components/ui/Button"
 import { IncidentDetail } from "../components/IncidentDetail"
+import styles from "./IncidentDetailPage.module.scss"
 
 export const IncidentDetailPage = () => {
   const navigate = useNavigate()
@@ -10,21 +12,26 @@ export const IncidentDetailPage = () => {
   const { incident, loading, error } = useIncidentDetails(id)
 
   if (loading) {
-    return <p>Loading incident...</p>
+    return <p className={styles.state}>Loading incident...</p>
   }
 
   if (error) {
-    return <p>{error}</p>
+    return <p className={styles.state}>{error}</p>
   }
 
   if (!incident) {
-    return <p>Incident not found.</p>
+    return <p className={styles.state}>Incident not found.</p>
   }
 
   return (
-    <div>
+    <div className={styles.page}>
+      <Button
+        icon={<ArrowLeft size={16} />}
+        label="Back to list"
+        variant="secondary"
+        onClick={() => navigate("/incidents")}
+      />
       <IncidentDetail incident={incident} />
-      <Button label="Back to list" variant="secondary" onClick={() => navigate("/")} />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-export type IncidentStatus = "open" | "in_progress" | "resolved"
+export type IncidentStatus = "open" | "in progress" | "resolved"
 
 export type IncidentPriority = "low" | "medium" | "high"
 
