@@ -27,6 +27,21 @@ export const createIncident = async (newIncident: Omit<Incident, "id" | "created
   return createdIncident
 }
 
+export const updateIncident = async (
+  id: string,
+  updatedFields: Partial<Omit<Incident, "id" | "createdAt">>,
+): Promise<Incident> => {
+  const response = await fetch(`${BASE_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedFields),
+  })
+  const updatedIncident = await response.json()
+  return updatedIncident
+}
+
 export const deleteIncident = async (id: string): Promise<void> => {
   await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",

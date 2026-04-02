@@ -9,7 +9,7 @@ export const IncidentDetailPage = () => {
   const navigate = useNavigate()
 
   const { id } = useParams<{ id: string }>()
-  const { incident, loading, error } = useIncidentDetails(id)
+  const { incident, loading, error, updateStatus } = useIncidentDetails(id)
 
   if (loading) {
     return <p className={styles.state}>Loading incident...</p>
@@ -31,7 +31,7 @@ export const IncidentDetailPage = () => {
         variant="secondary"
         onClick={() => navigate("/incidents")}
       />
-      <IncidentDetail incident={incident} />
+      <IncidentDetail incident={incident} onStatusChange={updateStatus} />
     </div>
   )
 }
