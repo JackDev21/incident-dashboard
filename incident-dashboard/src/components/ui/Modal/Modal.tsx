@@ -30,7 +30,7 @@ export const ConfirmModal = ({
   }, [onCancel])
 
   return createPortal(
-    <div className={styles.overlay} onClick={onCancel} role="dialog" aria-modal="true">
+    <div className={styles.overlay} onClick={(e) => { e.stopPropagation(); onCancel() }} role="dialog" aria-modal="true">
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <div className={styles.iconWrapper}>
