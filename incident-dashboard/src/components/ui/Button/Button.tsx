@@ -10,6 +10,7 @@ type ButtonProps = {
   className?: string
   variant?: ButtonVariant
   title?: string
+  type?: "button" | "submit" | "reset"
 }
 
 export const Button = ({
@@ -20,9 +21,11 @@ export const Button = ({
   className = "",
   variant = "primary",
   title,
+  type = "button",
 }: ButtonProps) => {
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={`${styles.button} ${variant === "icon" ? styles.iconButton : styles[variant]} ${className}`}
