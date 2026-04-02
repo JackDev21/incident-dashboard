@@ -3,6 +3,7 @@ import { EmptyIncidentState } from "@/features/incidents/components/EmptyInciden
 import { useIncidents } from "@/features/incidents/hooks/useIncidents"
 import { Button } from "@/components/ui/Button"
 import { useNavigate } from "react-router-dom"
+import { Plus } from "lucide-react"
 import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
 
 export const IncidentListPage = () => {
@@ -10,28 +11,44 @@ export const IncidentListPage = () => {
   const navigate = useNavigate()
 
   if (loading) {
-    return <p>Loading incidents...</p>
+    return (
+      <div className={styles.loadingState}>
+        <div className={styles.spinner}></div>
+        <p>Loading incidents...</p>
+      </div>
+    )
   }
 
   if (error) {
-    return <p>{error}</p>
-  }
-
-  if (incidents.length === 0) {
-    return <EmptyIncidentState />
+    return (
+      <div className={styles.errorState}>
+        <p>{error}</p>
+        <Button label="Try again" onClick={() => window.location.reload()} variant="secondary" />
+      </div>
+    )
   }
 
   return (
-    <div>
-      <h2>Incident List Page</h2>
-
-      <Button label="Create incident" onClick={() => navigate("/incidents/create")} />
-
-      {incidents.map((incident) => (
-        <div key={incident.id} onClick={() => navigate(`/incidents/${incident.id}`)} className={styles.listItem}>
-          <IncidentCard incident={incident} onDelete={removeIncident} />
+    <div className={styles.pageContainer}>
+      <div className={styles.pageHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>Incidents</h1>
+          <p className={styles.pageDescription}>Manage and track all system incidents.</p>
         </div>
-      ))}
+        <Button label="New Incident" icon={<Plus size={18} />} onClick={() => navigate("/incidents/create")} />
+      </div>
+
+      {incidents.length === 0 ? (
+        <EmptyIncidentState />
+      ) : (
+        <div className={styles.grid}>
+          {incidents.map((incident) => (
+            <div key={incident.id} onClick={() => navigate(`/incidents/${incident.id}`)} className={styles.listItem}>
+              <IncidentCard incident={incident} onDelete={removeIncident} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

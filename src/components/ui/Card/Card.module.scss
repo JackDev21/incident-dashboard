@@ -1,17 +1,16 @@
 .card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-md);
+    border-color: #d1d5db;
   }
 }

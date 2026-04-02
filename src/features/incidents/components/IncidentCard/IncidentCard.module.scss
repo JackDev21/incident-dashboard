@@ -3,30 +3,93 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
+  margin-bottom: 12px;
 }
 
 .titleContainer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 
   h3 {
     margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
 .badges {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .deleteButton {
   margin-top: -4px;
   margin-right: -4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Mostrar el botón de eliminar solo al hacer hover en la tarjeta (opcional para limpiar la UI) */
+:global(.card):hover .deleteButton {
+  opacity: 1;
+}
+
+/* Para móviles, siempre mostrar el botón */
+@media (max-width: 768px) {
+  .deleteButton {
+    opacity: 1;
+  }
+}
+
+.description {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
 }
 
 .assignee {
-  margin-top: 8px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--bg-app);
+    border: 1px solid var(--border-color);
+  }
+}
+
+.date {
+  font-size: 12px;
+  color: var(--text-secondary);
 }

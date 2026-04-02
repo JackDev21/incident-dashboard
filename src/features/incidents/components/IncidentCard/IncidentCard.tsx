@@ -20,20 +20,25 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
     }
   }
 
+  // Formatear la fecha si existe
+  const formattedDate = incident.createdAt
+    ? new Date(incident.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    : "Unknown date"
+
   return (
-    <Card>
+    <Card className="card">
       <div className={styles.header}>
         <div className={styles.titleContainer}>
-          <h3>{incident.title}</h3>
           <div className={styles.badges}>
             <Badge label={incident.status} variant={getStatusVariant(incident.status)} />
             <Badge label={incident.priority} variant={getPriorityVariant(incident.priority)} />
           </div>
+          <h3>{incident.title}</h3>
         </div>
 
         {onDelete && (
           <Button
-            icon={<Trash2 size={18} />}
+            icon={<Trash2 size={16} />}
             variant="icon"
             onClick={handleDelete}
             title="Delete incident"
@@ -42,9 +47,12 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
         )}
       </div>
 
-      <p>{incident.description}</p>
+      <p className={styles.description}>{incident.description}</p>
 
-      <p className={styles.assignee}>Assigned to: {incident.assignee}</p>
+      <div className={styles.footer}>
+        <span className={styles.assignee}>{incident.assignee}</span>
+        <span className={styles.date}>{formattedDate}</span>
+      </div>
     </Card>
   )
 }
