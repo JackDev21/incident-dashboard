@@ -33,8 +33,10 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
 
   const assigneeInitial = incident.assignee?.trim().charAt(0).toUpperCase() || "?"
 
+  const isResolved = incident.status === "resolved"
+
   return (
-    <Card className="card">
+    <Card className={["card", isResolved ? styles.resolved : ""].join(" ").trim()}>
       <div className={styles.header}>
         <div className={styles.titleContainer}>
           <div className={styles.badges}>

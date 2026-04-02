@@ -19,9 +19,9 @@ const incidentSchema = new Schema<IIncident>(
     status: { type: String, enum: ["open", "in progress", "resolved"], default: "open" },
     priority: { type: String, enum: ["low", "medium", "high"], required: true },
     assignee: { type: String, required: true, trim: true },
+    createdAt: { type: Date, default: Date.now },
   },
   {
-    timestamps: true,
     toJSON: {
       transform: (_doc, ret: Record<string, unknown>) => {
         ret.id = (ret._id as { toString(): string }).toString()

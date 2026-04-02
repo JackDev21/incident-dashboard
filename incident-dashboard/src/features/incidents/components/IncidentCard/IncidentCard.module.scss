@@ -38,12 +38,10 @@
   transition: opacity 0.2s ease;
 }
 
-/* Mostrar el botón de eliminar solo al hacer hover en la tarjeta (opcional para limpiar la UI) */
 :global(.card):hover .deleteButton {
   opacity: 1;
 }
 
-/* Para móviles, siempre mostrar el botón */
 @media (max-width: 768px) {
   .deleteButton {
     opacity: 1;
@@ -77,6 +75,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.resolved {
+  opacity: 0.55;
+  filter: blur(1px);
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+    filter: grayscale(20%);
+  }
 }
 
 .avatar {
