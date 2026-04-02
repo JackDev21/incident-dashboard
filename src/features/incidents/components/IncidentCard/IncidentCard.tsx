@@ -1,6 +1,8 @@
+import { useState } from "react"
 import { Badge } from "@/components/ui/Badge"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
+import { ConfirmModal } from "@/components/ui/Modal"
 import { Trash2 } from "lucide-react"
 import styles from "@/features/incidents/components/IncidentCard/IncidentCard.module.scss"
 
@@ -13,11 +15,16 @@ type IncidentCardProps = {
 }
 
 export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
-  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation() 
-    if (window.confirm("Are you sure you want to delete this incident?")) {
-      onDelete?.(incident.id)
-    }
+  const [showModal, setShowModal] = useState(false)
+
+  const handleDeleteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    setShowModal(true)
+  }
+
+  const handleConfirm = () => {
+    onDelete?.(incident.id)
+    setShowModal(false)
   }
 
   const formattedDate = incident.createdAt
@@ -41,7 +48,7 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
           <Button
             icon={<Trash2 size={16} />}
             variant="icon"
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             title="Delete incident"
             className={styles.deleteButton}
           />
@@ -59,6 +66,15 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
         </span>
         <span className={styles.date}>{formattedDate}</span>
       </div>
+
+      {showModal && (
+        <ConfirmModal
+          title="Delete incident"
+          description={`"${incident.title}" will be permanently deleted. This action cannot be undone.`}
+          onConfirm={handleConfirm}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
     </Card>
   )
 }
