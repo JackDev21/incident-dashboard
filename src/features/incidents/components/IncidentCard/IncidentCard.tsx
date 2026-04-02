@@ -25,6 +25,8 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
     ? new Date(incident.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : "Unknown date"
 
+  const assigneeInitial = incident.assignee?.trim().charAt(0).toUpperCase() || "?"
+
   return (
     <Card className="card">
       <div className={styles.header}>
@@ -50,7 +52,12 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
       <p className={styles.description}>{incident.description}</p>
 
       <div className={styles.footer}>
-        <span className={styles.assignee}>{incident.assignee}</span>
+        <span className={styles.assignee}>
+          <span className={styles.avatar} aria-hidden="true">
+            {assigneeInitial}
+          </span>
+          <span>{incident.assignee}</span>
+        </span>
         <span className={styles.date}>{formattedDate}</span>
       </div>
     </Card>

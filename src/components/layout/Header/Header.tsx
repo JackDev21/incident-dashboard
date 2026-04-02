@@ -12,7 +12,7 @@ export const Header = () => {
           </div>
           <span>IncidentHub</span>
         </Link>
-        
+
         <div className={styles.userProfile}>
           <div className={styles.avatar}>A</div>
           <span className={styles.userName}>Admin</span>

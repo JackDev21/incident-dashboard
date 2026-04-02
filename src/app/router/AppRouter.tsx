@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { IncidentListPage } from "@/features/incidents/pages/IncidentListPage"
 import { IncidentDetailPage } from "@/features/incidents/pages/IncidentDetailPage"
 import { CreateIncidentPage } from "@/features/incidents/pages/CreateIncidentPage"
-import { Layout } from "@/components/layout/Layout/Layout"
+import { Layout } from "@/components/layout/Layout"
 
 export const AppRouter = () => {
   return (
