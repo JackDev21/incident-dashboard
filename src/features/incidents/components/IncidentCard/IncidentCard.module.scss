@@ -1,12 +1,28 @@
 .header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  h3 {
+    margin: 0;
+  }
 }
 
 .badges {
   display: flex;
   gap: 8px;
+}
+
+.deleteButton {
+  margin-top: -4px;
+  margin-right: -4px;
 }
 
 .assignee {

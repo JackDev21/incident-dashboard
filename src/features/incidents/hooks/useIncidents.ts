@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getIncidents } from "../services/incidents.service"
+import { getIncidents, deleteIncident } from "../services/incidents.service"
 import type { Incident } from "../types/incident.types"
 
 export const useIncidents = () => {
@@ -25,5 +25,14 @@ export const useIncidents = () => {
     loadIncidents()
   }, [])
 
-  return { incidents, loading, error }
+  const removeIncident = async (id: string) => {
+    try {
+      await deleteIncident(id)
+      setIncidents((prev) => prev.filter((incident) => incident.id !== id))
+    } catch {
+      setError("Failed to delete incident")
+    }
+  }
+
+  return { incidents, loading, error, removeIncident }
 }

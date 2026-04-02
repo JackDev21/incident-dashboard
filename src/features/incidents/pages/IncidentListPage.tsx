@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
 
 export const IncidentListPage = () => {
-  const { incidents, loading, error } = useIncidents()
+  const { incidents, loading, error, removeIncident } = useIncidents()
   const navigate = useNavigate()
 
   if (loading) {
@@ -29,7 +29,7 @@ export const IncidentListPage = () => {
 
       {incidents.map((incident) => (
         <div key={incident.id} onClick={() => navigate(`/incidents/${incident.id}`)} className={styles.listItem}>
-          <IncidentCard incident={incident} />
+          <IncidentCard incident={incident} onDelete={removeIncident} />
         </div>
       ))}
     </div>

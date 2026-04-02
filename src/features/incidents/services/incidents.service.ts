@@ -21,3 +21,11 @@ export const createIncident = async (newIncident: Omit<Incident, "id" | "created
 
   return Promise.resolve(incident)
 }
+
+export const deleteIncident = async (id: string): Promise<void> => {
+  const index = incidentsMock.findIndex((incident) => incident.id === id)
+  if (index !== -1) {
+    incidentsMock.splice(index, 1)
+  }
+  return Promise.resolve()
+}
