@@ -22,7 +22,7 @@ export const IncidentListPage = () => {
   if (error) {
     return (
       <div className={styles.errorState}>
-        <p>{error}</p>
+        <p>{error.message}</p>
         <Button label="Try again" onClick={() => window.location.reload()} variant="secondary" />
       </div>
     )
@@ -35,11 +35,7 @@ export const IncidentListPage = () => {
           <h1 className={styles.pageTitle}>Incidents</h1>
           <p className={styles.pageDescription}>Manage and track all system incidents.</p>
         </div>
-        <Button
-          label="New Incident"
-          icon={<Plus size={18} />}
-          onClick={() => navigate("/incidents/create")}
-        />
+        <Button label="New Incident" icon={<Plus size={18} />} onClick={() => navigate("/incidents/create")} />
       </div>
 
       {incidents.length === 0 ? (

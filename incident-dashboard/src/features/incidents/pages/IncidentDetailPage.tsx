@@ -16,7 +16,7 @@ export const IncidentDetailPage = () => {
   }
 
   if (error) {
-    return <p className={styles.state}>{error}</p>
+    return <p className={styles.state}>{error.message}</p>
   }
 
   if (!incident) {

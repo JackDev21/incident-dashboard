@@ -1,31 +1,34 @@
-import { incidentsMock } from "@/features/incidents/mock/incident.mock"
 import type { Incident } from "@/features/incidents/types/incident.types"
 
+const BASE_URL = `${import.meta.env.VITE_API_URL}/incidents`
+
 export const getIncidents = async (): Promise<Incident[]> => {
-  return Promise.resolve(incidentsMock)
+  const response = await fetch(BASE_URL)
+  const incidents = await response.json()
+  return incidents || []
 }
 
 export const getIncidentById = async (id: string): Promise<Incident | null> => {
-  const incident = incidentsMock.find((incident) => incident.id === id)
-  return Promise.resolve(incident || null)
+  const response = await fetch(`${BASE_URL}/${id}`)
+  const incident = await response.json()
+  return incident || null
 }
 
 export const createIncident = async (newIncident: Omit<Incident, "id" | "createdAt">): Promise<Incident> => {
-  const incident: Incident = {
-    ...newIncident,
-    id: crypto.randomUUID(),
-    createdAt: new Date().toISOString().split("T")[0],
-  }
+  const response = await fetch(BASE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newIncident),
+  })
 
-  incidentsMock.push(incident)
-
-  return Promise.resolve(incident)
+  const createdIncident = await response.json()
+  return createdIncident
 }
 
 export const deleteIncident = async (id: string): Promise<void> => {
-  const index = incidentsMock.findIndex((incident) => incident.id === id)
-  if (index !== -1) {
-    incidentsMock.splice(index, 1)
-  }
-  return Promise.resolve()
+  await fetch(`${BASE_URL}/${id}`, {
+    method: "DELETE",
+  })
 }
