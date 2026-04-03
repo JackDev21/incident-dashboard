@@ -1,5 +1,3 @@
-import type { Response } from "express"
-
 export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
