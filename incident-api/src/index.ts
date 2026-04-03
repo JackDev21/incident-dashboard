@@ -2,7 +2,7 @@ import "dotenv/config"
 import express from "express"
 import cors from "cors"
 import { connectDB } from "./config/db"
-import incidentRoutes from "./modules/incidents/incident.routes"
+import { incidentRoutes, chatRoutes } from "./modules"
 import { errorHandler } from "./middleware/errorHandler"
 import { requestLogger, notFound } from "./middleware"
 
@@ -15,6 +15,7 @@ app.use(requestLogger)
 
 // Routes
 app.use("/api/incidents", incidentRoutes)
+app.use("/api/chat", chatRoutes)
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" })
