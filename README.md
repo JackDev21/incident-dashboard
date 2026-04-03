@@ -55,9 +55,9 @@ The architecture follows **best practices** for scalability, maintainability, an
 The system follows a **decoupled architecture** where the frontend communicates with the backend via a RESTful API.
 
 ```mermaid
- graph LR
-   A[Frontend (incident-dashboard)] -->|HTTP Requests| B[Backend (incident-api)]
-   B -->|CRUD Operations| C[MongoDB]
+graph LR
+  A[Frontend: incident-dashboard] -->|HTTP Requests| B[Backend: incident-api]
+  B -->|CRUD Operations| C[MongoDB]
 ```
 
 ### Data Flow
