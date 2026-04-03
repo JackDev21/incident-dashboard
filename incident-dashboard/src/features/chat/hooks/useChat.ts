@@ -11,7 +11,7 @@ export const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
 
   const { mutate: sendMessage, isPending } = useMutation({
-    mutationFn: queryChat,
+    mutationFn: (question: string) => queryChat(question, messages),
     onMutate: (question: string) => {
       setMessages((prev) => [...prev, { role: "user", content: question }])
     },

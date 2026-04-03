@@ -9,6 +9,10 @@ export const messageChat = async (req: Request, res: Response): Promise<void> =>
     throw createAppError(400, "Question is required")
   }
 
-  const answer = await chatService.answerQuestion(question)
+  const history: Array<{ role: "user" | "assistant"; content: string }> = Array.isArray(req.body?.history)
+    ? req.body.history
+    : []
+
+  const answer = await chatService.answerQuestion(question, history)
   sendSuccess(res, { answer }, "Answer generated successfully")
 }

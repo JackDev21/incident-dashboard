@@ -6,11 +6,13 @@ type ChatApiResponse = {
   message?: string
 }
 
-export const queryChat = async (question: string): Promise<string> => {
+type HistoryMessage = { role: "user" | "assistant"; content: string }
+
+export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<string> => {
   const response = await fetch(`${BASE_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, history }),
   })
 
   const payload = (await response.json()) as ChatApiResponse
