@@ -1,195 +1,184 @@
 # Incident Dashboard
 
-Frontend application built with React and TypeScript for incident management.
+Frontend application built with **React** and **TypeScript** for the **Incident Management System**. This project provides a modern, responsive interface to visualize and manage incidents.
 
-This project is designed to demonstrate frontend best practices, including modular architecture, separation of concerns, reusable components, and strong typing.
-
----
-
-## 🚀 Technologies
-
-- React
-- TypeScript
-- Vite
-- SCSS (SASS)
-- CSS Modules
-- React Router
-- pnpm
+For more details about the overall project, check the [Root README](../README.md).
 
 ---
 
-## 🎯 Project Goal
+## 🚀 Overview
 
-The main goal is to simulate a real application by applying:
-
-- Scalable frontend architecture
-- Reusable UI components
-- Separation between presentation, logic, and data access
-- Domain modeling with TypeScript
-- A foundation for unit testing
+This dashboard is designed to:
+- **Visualize incidents** in a user-friendly interface.
+- **Interact with the backend API** (`incident-api`) to manage incidents.
+- **Follow best practices** for scalability, maintainability, and separation of concerns.
 
 ---
 
-## 🧠 Architecture
+## 🛠️ Technologies
 
-The project follows a **feature-based architecture**:
+- **Framework**: React
+- **Language**: TypeScript
+- **Build Tool**: Vite
+- **Styling**: SCSS + CSS Modules
+- **State Management**: React Query
+- **Routing**: React Router DOM
+- **UI Components**: Lucide React (icons)
+- **Package Manager**: pnpm
+
+---
+
+## 📂 Project Structure
+
+The project follows a **feature-based architecture** to ensure scalability and maintainability:
 
 ```txt
 src/
-  app/                # Global configuration (router)
+  app/                # Global configuration (router, providers)
   components/
-    ui/               # Reusable components (Button, Card, etc.)
+    ui/               # Reusable UI components (Button, Card, etc.)
     layout/           # Layout components (global structure)
   features/
     incidents/        # Incident domain
-      components/     # Domain components (IncidentCard)
-      pages/          # Views (list, detail, creation)
-      services/       # Data access (mock / API)
-      mocks/          # Mock data
-      types/          # Domain types
-  styles/             # Global styles
+      components/     # Domain-specific components (IncidentCard, IncidentForm)
+      pages/          # Views (IncidentList, IncidentDetail, CreateIncident)
+      services/       # Data access layer (API calls)
+      types/          # Domain types (Incident, IncidentStatus, etc.)
+  styles/           # Global styles and variables
 ```
 
 ---
 
-## 🧩 Layer Separation
+## 🔗 Architecture & Data Flow
 
-A clear separation of responsibilities has been applied:
+The frontend follows a **decoupled architecture** where:
 
-- **UI**
-  Reusable components and pages (`components`, `pages`)
+1. **UI Components** (pages, components) interact with **services** to fetch or send data.
+2. **Services** communicate with the **backend API** (`incident-api`).
+3. **State management** is handled by **React Query** for caching and synchronization.
 
-- **Business logic**
-  (in progress, to be implemented with hooks and utils)
-
-- **Data access**
-  Decoupled services (`services`)
-
-- **Domain**
-  Types and entities (`types`)
-
----
-
-## 🔄 Data Flow
-
-```txt
-UI (pages/components)
-        ↓
-Services (services)
-        ↓
-Data (mock / API)
+```mermaid
+ graph TD
+   A[UI Components] --> B[Services]
+   B --> C[Backend API (incident-api)]
 ```
 
-The UI never accesses data directly.
-
 ---
 
-## 🧩 Reusable Components
+## 🧩 Key Features
 
-A base UI layer has been created:
+### Reusable UI Components
+
+A base UI layer has been created to ensure consistency and reusability:
 
 - `Button`
 - `Card`
+- `Modal`
 
 Example:
 
 ```tsx
-<Button label="Create incident" variant="primary" />
+<Button label="Create Incident" variant="primary" onClick={handleCreate} />
 ```
 
 Features:
-
-- Typed props
-- Configurable variants
-- Encapsulated styles (CSS Modules)
-
----
-
-## 🎨 Styling
-
-- SCSS (SASS)
-- CSS Modules
-
-Benefits:
-
-- Component-level style encapsulation
-- Avoids global collisions
-- Makes scaling easier
+- **Typed props** for better developer experience.
+- **Configurable variants** (e.g., `primary`, `secondary`).
+- **Encapsulated styles** using CSS Modules.
 
 ---
 
-## 📄 Feature: Incidents
+### Incident Management
 
-Main application functionality:
+The main functionality includes:
 
-- Incident list
-- Rendering through domain components (`IncidentCard`)
-- Data loading through service (`getIncidents`)
-- Local state usage (`useState`)
-- Controlled effects (`useEffect`)
+- **Incident List**: Displays all incidents in a responsive grid.
+- **Incident Detail**: Shows detailed information about a specific incident.
+- **Create/Edit Incident**: Forms to create or update incidents.
+- **Delete Incident**: Option to delete an incident.
 
 ---
 
-## ⚙️ Installation
+## 🚀 Getting Started
 
-### Clone the repository
+### Prerequisites
+
+- **Node.js** (v20 or later)
+- **pnpm** (v9 or later)
+
+### Environment Variables
+
+| Variable       | Description            | Example                 |
+| -------------- | ---------------------- | ----------------------- |
+| `VITE_API_URL` | URL of the backend API | `http://localhost:3000` |
+
+---
+
+### Setup
+
+#### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/incident-dashboard.git
-cd incident-dashboard
+ git clone https://github.com/YOUR_USERNAME/incident-management-system.git
+ cd incident-management-system/incident-dashboard
 ```
 
-### Install dependencies
+#### 2. Install dependencies
 
 ```bash
-pnpm install
+ pnpm install
 ```
 
-### Run in development
+#### 3. Configure environment variables
+
+Create a `.env` file in the root of the `incident-dashboard` directory with the following content:
+
+```env
+ VITE_API_URL=http://localhost:3000
+```
+
+#### 4. Start the development server
 
 ```bash
-pnpm dev
+ pnpm dev
 ```
 
-Open in browser:
-
-```text
-http://localhost:5173/
-```
+The dashboard will be available at `http://localhost:5173`.
 
 ---
 
-## 🧪 Testing (coming soon)
+## 🧪 Testing
 
-The project is ready to include:
+Testing is a **planned feature** for this project. The frontend will soon include:
 
-- Unit tests for logic
-- Component tests
-- Interaction tests
-
----
-
-## 🔧 Best Practices Applied
-
-- Separation of concerns
-- Reusable components
-- Modular feature-based architecture
-- Strong typing with TypeScript
-- Decoupled data source
-- Component composition
+- **Unit tests** for components and hooks.
+- **Component tests** using React Testing Library.
+- **Integration tests** for API interactions and user flows.
 
 ---
 
-## 📌 Focus
+## 📌 Best Practices
 
-This project is not only about functionality, but also about showing:
+- **Feature-based architecture**: Code is organized by domain (e.g., `incidents`).
+- **Reusable components**: UI components are modular and typed.
+- **CSS Modules**: Styles are scoped to components to avoid global conflicts.
+- **Decoupled data access**: Services handle API communication.
+- **Strong typing**: TypeScript ensures type safety across the application.
 
-- how to structure a real frontend application
-- how to scale code in a maintainable way
-- how to work with reusable components
+---
+
+## 🛠️ Future Improvements
+
+- **Authentication**: Add user authentication (e.g., JWT).
+- **Real-time updates**: Use WebSockets or Server-Sent Events (SSE) for live updates.
+- **Dark mode**: Implement a dark/light theme toggle.
+- **Advanced filtering**: Add robust filtering and sorting options.
+- **Pagination**: Implement pagination for incident lists.
 
 ---
 
 ## 👤 Author
 
-Jose A. Cantó (JackDev)
+**Jose A. Cantó (JackDev)**
+- GitHub: [@JackDev21](https://github.com/JackDev21)
+- LinkedIn: [Jose A. Cantó](https://www.linkedin.com/in/joseaclopez/)
