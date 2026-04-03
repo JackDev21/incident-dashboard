@@ -2,19 +2,29 @@ import "dotenv/config"
 import express from "express"
 import cors from "cors"
 import { connectDB } from "./config/db"
-import incidentRoutes from "./incidents/incident.routes"
+import incidentRoutes from "./modules/incidents/incident.routes"
+import { errorHandler, AppError } from "./middleware/errorHandler"
+import { requestLogger, notFound } from "./middleware"
 
 const app = express()
 const PORT = process.env.PORT ?? 3000
 
 app.use(cors({ origin: "http://localhost:5173" }))
 app.use(express.json())
+app.use(requestLogger)
 
+// Routes
 app.use("/api/incidents", incidentRoutes)
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" })
 })
+
+// 404 handler
+app.use(notFound)
+
+// Global error handler
+app.use(errorHandler)
 
 connectDB()
   .then(() => {

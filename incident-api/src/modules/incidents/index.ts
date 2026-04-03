@@ -1,0 +1,5 @@
+export { IncidentModel } from "./incident.model"
+export type { Incident, CreateIncidentInput, UpdateIncidentInput } from "./incident.types"
+export * as incidentService from "./incident.service"
+export { getIncidents, getIncidentById, createIncident, updateIncident, deleteIncident } from "./incident.controller"
+export { default as incidentRoutes } from "./incident.routes"

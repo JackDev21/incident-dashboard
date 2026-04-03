@@ -36,17 +36,30 @@ This API is designed to:
 incident-api/
 ├── src/
 │   ├── config/
-│   │   └── db.ts            # Database connection
-│   ├── incidents/
-│   │   ├── incident.controller.ts  # Business logic
-│   │   ├── incident.model.ts       # Data model
-│   │   ├── incident.routes.ts      # API routes
-│   │   └── incident.types.ts       # TypeScript types (if separate)
-│   └── index.ts            # Entry point
-├── .env                    # Environment variables
-├── package.json            # Project dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-└── README.md               # Project documentation
+│   │   └── db.ts                           # Database connection
+│   ├── middleware/
+│   │   ├── errorHandler.ts                 # Global error handling
+│   │   └── index.ts                        # Middleware exports
+│   ├── modules/
+│   │   ├── incidents/
+│   │   │   ├── dtos/
+│   │   │   │   └── create-incident.dto.ts  # Validation DTOs
+│   │   │   ├── incident.controller.ts      # Request handlers
+│   │   │   ├── incident.model.ts           # Mongoose schema
+│   │   │   ├── incident.routes.ts          # API routes
+│   │   │   ├── incident.service.ts         # Business logic
+│   │   │   ├── incident.types.ts           # TypeScript types
+│   │   │   └── index.ts                    # Module exports
+│   │   └── index.ts                        # Modules exports
+│   ├── types/
+│   │   └── common.types.ts                 # Global types
+│   ├── utils/
+│   │   └── responses.ts                    # Response helpers
+│   └── index.ts                            # Entry point
+├── .env                                    # Environment variables
+├── package.json                            # Project dependencies
+├── tsconfig.json                           # TypeScript configuration
+└── README.md                               # This file
 ```
 
 ---
@@ -59,7 +72,7 @@ The API exposes the following endpoints for incident management:
 | ------ | ---------------- | ---------------------------- | --------------------------------------------------------- |
 | GET    | `/incidents`     | Retrieve all incidents       | N/A                                                       |
 | GET    | `/incidents/:id` | Retrieve a specific incident | N/A                                                       |
-| POST   | `/incidents`     | Create a new incident        | `{ title, description, status, priority, assignee }`      |
+| POST   | `/incidents`     | Create a new incident        | `{ title, description, priority, assignee }`              |
 | PUT    | `/incidents/:id` | Update an existing incident  | `{ title?, description?, status?, priority?, assignee? }` |
 | DELETE | `/incidents/:id` | Delete an incident           | N/A                                                       |
 
@@ -75,7 +88,6 @@ Content-Type: application/json
 {
   "title": "Server Down",
   "description": "The main application server is not responding.",
-  "status": "open",
   "priority": "high",
   "assignee": "John Doe"
 }
@@ -84,13 +96,25 @@ Content-Type: application/json
 **Response:**
 ```json
 {
-  "id": "65a1e4b3c8d6a1b2c3d4e5f6",
-  "title": "Server Down",
-  "description": "The main application server is not responding.",
-  "status": "open",
-  "priority": "high",
-  "assignee": "John Doe",
-  "createdAt": "2024-01-12T10:00:00.000Z"
+  "success": true,
+  "data": {
+    "id": "65a1e4b3c8d6a1b2c3d4e5f6",
+    "title": "Server Down",
+    "description": "The main application server is not responding.",
+    "status": "open",
+    "priority": "high",
+    "assignee": "John Doe",
+    "createdAt": "2024-01-12T10:00:00.000Z"
+  },
+  "message": "Incident created successfully"
+}
+```
+
+**Validation Error Response:**
+```json
+{
+  "success": false,
+  "error": "Title is required and must be a non-empty string"
 }
 ```
 
@@ -103,26 +127,30 @@ GET /incidents
 
 **Response:**
 ```json
-[
-  {
-    "id": "65a1e4b3c8d6a1b2c3d4e5f6",
-    "title": "Server Down",
-    "description": "The main application server is not responding.",
-    "status": "open",
-    "priority": "high",
-    "assignee": "John Doe",
-    "createdAt": "2024-01-12T10:00:00.000Z"
-  },
-  {
-    "id": "65a1e4b3c8d6a1b2c3d4e5f7",
-    "title": "Database Connection Failed",
-    "description": "Unable to connect to the database.",
-    "status": "in progress",
-    "priority": "medium",
-    "assignee": "Jane Smith",
-    "createdAt": "2024-01-11T09:00:00.000Z"
-  }
-]
+{
+  "success": true,
+  "data": [
+    {
+      "id": "65a1e4b3c8d6a1b2c3d4e5f6",
+      "title": "Server Down",
+      "description": "The main application server is not responding.",
+      "status": "open",
+      "priority": "high",
+      "assignee": "John Doe",
+      "createdAt": "2024-01-12T10:00:00.000Z"
+    },
+    {
+      "id": "65a1e4b3c8d6a1b2c3d4e5f7",
+      "title": "Database Connection Failed",
+      "description": "Unable to connect to the database.",
+      "status": "in progress",
+      "priority": "medium",
+      "assignee": "Jane Smith",
+      "createdAt": "2024-01-11T09:00:00.000Z"
+    }
+  ],
+  "message": "Incidents retrieved successfully"
+}
 ```
 
 ---
@@ -208,12 +236,13 @@ Testing is a **planned feature** for this project. The API will soon include:
 
 ## 📌 Best Practices
 
-- **Separation of concerns**: Routes, controllers, and models are decoupled.
-- **Type safety**: TypeScript is used for all layers.
+- **Separation of concerns**: Routes, controllers, services, and models are properly decoupled.
+- **Validation layer**: Input data is validated using DTOs before processing.
+- **Centralized error handling**: All errors are caught by a global middleware.
+- **Type safety**: TypeScript is used for all layers with explicit interfaces.
 - **RESTful design**: API follows REST conventions.
 - **Environment variables**: Sensitive configuration is managed via `.env`.
-- **Error handling**: Proper HTTP status codes and error messages are returned.
-- **Validation**: Input data is validated using Mongoose schemas.
+- **Service layer**: Business logic is separated from controllers.
 
 ---
 
@@ -231,11 +260,33 @@ Testing is a **planned feature** for this project. The API will soon include:
 ## 🔗 Architecture
 
 ```mermaid
- graph TD
-   A[Routes] --> B[Controllers]
-   B --> C[Models]
-   C --> D[MongoDB]
+graph LR
+   Client["📱 Client"]
+   Routes["🔗 Routes"]
+   Validation["✅ Validation<br/>(DTOs)"]
+   Controller["🎮 Controllers"]
+   Service["⚙️ Services"]
+   Model["💾 Models"]
+   DB["🗄️ MongoDB"]
+   
+   Client -->|Request| Routes
+   Routes -->|Middleware| Validation
+   Validation -->|Valid Data| Controller
+   Controller -->|Business Logic| Service
+   Service -->|Database Ops| Model
+   Model -->|Query| DB
+   DB -->|Response| Service
+   Service -->|Result| Controller
+   Controller -->|JSON| Client
 ```
+
+### Flow Description
+1. **Routes**: Receive HTTP requests and route to appropriate handlers
+2. **Middleware**: Validate input data using DTOs before processing
+3. **Controllers**: Handle requests and call service methods
+4. **Services**: Contain all business logic and database operations
+5. **Models**: Define MongoDB schemas and queries
+6. **MongoDB**: Store and retrieve incident data
 
 ---
 

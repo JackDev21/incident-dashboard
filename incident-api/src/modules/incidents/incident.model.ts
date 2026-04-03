@@ -1,18 +1,7 @@
-import { Schema, model, Document } from "mongoose"
+import { Schema, model } from "mongoose"
+import type { Incident } from "./incident.types"
 
-export type IncidentStatus = "open" | "in progress" | "resolved"
-export type IncidentPriority = "low" | "medium" | "high"
-
-export interface IIncident extends Document {
-  title: string
-  description: string
-  status: IncidentStatus
-  priority: IncidentPriority
-  assignee: string
-  createdAt: Date
-}
-
-const incidentSchema = new Schema<IIncident>(
+const incidentSchema = new Schema<Incident>(
   {
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true, trim: true },
@@ -20,8 +9,10 @@ const incidentSchema = new Schema<IIncident>(
     priority: { type: String, enum: ["low", "medium", "high"], required: true },
     assignee: { type: String, required: true, trim: true },
     createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
   },
   {
+    timestamps: true,
     toJSON: {
       transform: (_doc, ret: Record<string, unknown>) => {
         ret.id = (ret._id as { toString(): string }).toString()
@@ -33,4 +24,4 @@ const incidentSchema = new Schema<IIncident>(
   },
 )
 
-export const Incident = model<IIncident>("Incident", incidentSchema)
+export const IncidentModel = model<Incident>("Incident", incidentSchema)
