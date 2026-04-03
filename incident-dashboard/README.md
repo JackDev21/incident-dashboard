@@ -9,6 +9,7 @@ For more details about the overall project, check the [Root README](../README.md
 ## 🚀 Overview
 
 This dashboard is designed to:
+
 - **Visualize incidents** in a user-friendly interface.
 - **Interact with the backend API** (`incident-api`) to manage incidents.
 - **Follow best practices** for scalability, maintainability, and separation of concerns.
@@ -82,6 +83,7 @@ Example:
 ```
 
 Features:
+
 - **Typed props** for better developer experience.
 - **Configurable variants** (e.g., `primary`, `secondary`).
 - **Encapsulated styles** using CSS Modules.
@@ -179,6 +181,7 @@ Testing is a **planned feature** for this project. The frontend will soon includ
 
 ## 👤 Author
 
-**Jose A. Cantó (JackDev)**
+Jose A. Cantó (JackDev)
+
 - GitHub: [@JackDev21](https://github.com/JackDev21)
 - LinkedIn: [Jose A. Cantó](https://www.linkedin.com/in/joseaclopez/)

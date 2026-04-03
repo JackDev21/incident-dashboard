@@ -9,6 +9,7 @@ For more details about the overall project, check the [Root README](../README.md
 ## 🚀 Overview
 
 This API is designed to:
+
 - **Store and manage incident data** in a MongoDB database.
 - **Provide a RESTful interface** for frontend applications (e.g., `incident-dashboard`).
 - **Ensure type safety** with TypeScript.
@@ -81,6 +82,7 @@ The API exposes the following endpoints for incident management:
 #### **Create an Incident**
 
 **Request:**
+
 ```http
 POST /incidents
 Content-Type: application/json
@@ -94,6 +96,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -111,6 +114,7 @@ Content-Type: application/json
 ```
 
 **Validation Error Response:**
+
 ```json
 {
   "success": false,
@@ -121,11 +125,13 @@ Content-Type: application/json
 #### **Get All Incidents**
 
 **Request:**
+
 ```http
 GET /incidents
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -281,6 +287,7 @@ graph LR
 ```
 
 ### Flow Description
+
 1. **Routes**: Receive HTTP requests and route to appropriate handlers
 2. **Middleware**: Validate input data using DTOs before processing
 3. **Controllers**: Handle requests and call service methods
@@ -292,6 +299,7 @@ graph LR
 
 ## 👤 Author
 
-**Jose A. Cantó (JackDev)**
+Jose A. Cantó (JackDev)
+
 - GitHub: [@JackDev21](https://github.com/JackDev21)
 - LinkedIn: [Jose A. Cantó](https://www.linkedin.com/in/joseaclopez/)

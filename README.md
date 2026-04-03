@@ -10,6 +10,7 @@ This repository contains a **full-stack Incident Management System** composed of
 ## 🚀 Overview
 
 This system allows users to:
+
 - **Create, read, update, and delete incidents** via a RESTful API.
 - **Visualize and manage incidents** through a modern, responsive dashboard.
 - **Filter and view incident details** in a user-friendly interface.
@@ -32,6 +33,7 @@ The architecture follows **best practices** for scalability, maintainability, an
 ## 🛠️ Technologies
 
 ### Backend (`incident-api`)
+
 - **Runtime**: Node.js
 - **Framework**: Express
 - **Database**: MongoDB (Mongoose ODM)
@@ -39,6 +41,7 @@ The architecture follows **best practices** for scalability, maintainability, an
 - **Development Tools**: `ts-node-dev`, `TypeScript`, `dotenv`, `cors`
 
 ### Frontend (`incident-dashboard`)
+
 - **Framework**: React
 - **Language**: TypeScript
 - **Build Tool**: Vite
@@ -61,6 +64,7 @@ graph LR
 ```
 
 ### Data Flow
+
 1. The **frontend** sends HTTP requests to the **backend API**.
 2. The **backend** processes the requests, interacts with the **database**, and returns responses.
 3. The **frontend** displays the data and allows users to interact with it.
@@ -109,13 +113,15 @@ An **incident** represents an issue that needs to be tracked and resolved. It ha
 
 ### Environment Variables
 
-#### Backend (`incident-api`)
+#### Backend Variables (`incident-api`)
+
 | Variable      | Description                 | Example                                 |
 | ------------- | --------------------------- | --------------------------------------- |
 | `PORT`        | Port for the backend server | `3000`                                  |
 | `MONGODB_URI` | URI for MongoDB connection  | `mongodb://localhost:27017/incident_db` |
 
-#### Frontend (`incident-dashboard`)
+#### Frontend Variables (`incident-dashboard`)
+
 | Variable       | Description            | Example                 |
 | -------------- | ---------------------- | ----------------------- |
 | `VITE_API_URL` | URL of the backend API | `http://localhost:3000` |
@@ -186,12 +192,14 @@ For more details, check the [Frontend README](./incident-dashboard/README.md).
 
 Testing is a **planned feature** for this project. Both the **backend** and **frontend** will soon include:
 
-### Backend (`incident-api`)
+### Backend Testing (`incident-api`)
+
 - **Unit tests** for controllers and services.
 - **Integration tests** for API endpoints.
 - **Test coverage** to ensure reliability.
 
-### Frontend (`incident-dashboard`)
+### Frontend Testing (`incident-dashboard`)
+
 - **Unit tests** for components and hooks.
 - **Component tests** using React Testing Library.
 - **Integration tests** for API interactions and user flows.
@@ -201,12 +209,14 @@ Testing is a **planned feature** for this project. Both the **backend** and **fr
 ## 📌 Best Practices
 
 ### Backend
+
 - **Separation of concerns**: Routes, controllers, and models are decoupled.
 - **Type safety**: TypeScript is used for all layers.
 - **RESTful design**: API follows REST conventions.
 - **Environment variables**: Sensitive configuration is managed via `.env`.
 
 ### Frontend
+
 - **Feature-based architecture**: Code is organized by domain (e.g., `incidents`).
 - **Reusable components**: UI components are modular and typed.
 - **CSS Modules**: Styles are scoped to components.
@@ -227,6 +237,7 @@ Testing is a **planned feature** for this project. Both the **backend** and **fr
 
 ## 👤 Author
 
-**Jose A. Cantó (JackDev)**
+Jose A. Cantó (JackDev)
+
 - GitHub: [@JackDev21](https://github.com/JackDev21)
 - LinkedIn: [Jose A. Cantó](https://www.linkedin.com/in/joseaclopez/)
