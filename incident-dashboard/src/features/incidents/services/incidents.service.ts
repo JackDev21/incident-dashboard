@@ -8,7 +8,23 @@ type ApiResponse<T> = {
   message?: string
 }
 
-const getApiErrorMessage = async (response: Response, fallback: string): Promise<string> => {
+const responseData = <T>(payload: unknown): T | undefined => {
+  const wrapped = payload as ApiResponse<T>
+  return wrapped?.data
+}
+
+const readPayload = async <T>(response: Response): Promise<T> => {
+  const payload: unknown = await response.json()
+  return responseData<T>(payload) ?? (payload as T)
+}
+
+const validateHttpResponse = async (response: Response, fallback: string): Promise<void> => {
+  if (!response.ok) {
+    throw new Error(await apiErrorBackend(response, fallback))
+  }
+}
+
+const apiErrorBackend = async (response: Response, fallback: string): Promise<string> => {
   try {
     const payload = (await response.json()) as ApiResponse<unknown>
     if (typeof payload?.message === "string" && payload.message.trim()) {
@@ -23,9 +39,7 @@ const getApiErrorMessage = async (response: Response, fallback: string): Promise
 
 export const getIncidents = async (): Promise<Incident[]> => {
   const response = await fetch(BASE_URL)
-  if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, "Failed to fetch incidents"))
-  }
+  await validateHttpResponse(response, "Failed to fetch incidents")
 
   const payload: unknown = await response.json()
 
@@ -33,11 +47,12 @@ export const getIncidents = async (): Promise<Incident[]> => {
     return payload as Incident[]
   }
 
-  const wrapped = payload as ApiResponse<Incident[]>
-  if (Array.isArray(wrapped.data)) {
-    return wrapped.data
+  const data = responseData<Incident[]>(payload)
+  if (Array.isArray(data)) {
+    return data
   }
 
+  console.warn("Unexpected API response format for incidents:", payload)
   return []
 }
 
@@ -48,13 +63,9 @@ export const getIncidentById = async (id: string): Promise<Incident | null> => {
     return null
   }
 
-  if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, "Failed to fetch incident"))
-  }
+  await validateHttpResponse(response, "Failed to fetch incident")
 
-  const payload: unknown = await response.json()
-  const wrapped = payload as ApiResponse<Incident>
-  return wrapped.data ?? ((payload as Incident) || null)
+  return (await readPayload<Incident | null>(response)) ?? null
 }
 
 export const createIncident = async (newIncident: Omit<Incident, "id" | "createdAt">): Promise<Incident> => {
@@ -66,13 +77,9 @@ export const createIncident = async (newIncident: Omit<Incident, "id" | "created
     body: JSON.stringify(newIncident),
   })
 
-  if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, "Failed to create incident"))
-  }
+  await validateHttpResponse(response, "Failed to create incident")
 
-  const payload: unknown = await response.json()
-  const wrapped = payload as ApiResponse<Incident>
-  return wrapped.data ?? (payload as Incident)
+  return await readPayload<Incident>(response)
 }
 
 export const updateIncident = async (
@@ -87,13 +94,9 @@ export const updateIncident = async (
     body: JSON.stringify(updatedFields),
   })
 
-  if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response, "Failed to update incident"))
-  }
+  await validateHttpResponse(response, "Failed to update incident")
 
-  const payload: unknown = await response.json()
-  const wrapped = payload as ApiResponse<Incident>
-  return wrapped.data ?? (payload as Incident)
+  return await readPayload<Incident>(response)
 }
 
 export const deleteIncident = async (id: string): Promise<void> => {
@@ -102,6 +105,6 @@ export const deleteIncident = async (id: string): Promise<void> => {
   })
 
   if (!response.ok && response.status !== 404) {
-    throw new Error(await getApiErrorMessage(response, "Failed to delete incident"))
+    await validateHttpResponse(response, "Failed to delete incident")
   }
 }
