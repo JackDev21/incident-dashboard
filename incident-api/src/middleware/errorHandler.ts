@@ -1,21 +1,27 @@
 import type { Request, Response, NextFunction } from "express"
 import { sendError } from "../utils/responses"
 
-export class AppError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public details?: unknown,
-  ) {
-    super(message)
-    Error.captureStackTrace(this, this.constructor)
-  }
+export interface AppError extends Error {
+  statusCode: number
+  details?: unknown
 }
 
-export const errorHandler = (err: Error | AppError, _req: Request, res: Response, _next: NextFunction): void => {
+export const createAppError = (statusCode: number, message: string, details?: unknown): AppError => {
+  const error = new Error(message) as AppError
+  error.statusCode = statusCode
+  error.details = details
+  Error.captureStackTrace(error, createAppError)
+  return error
+}
+
+const isAppError = (error: unknown): error is AppError => {
+  return error instanceof Error && "statusCode" in error
+}
+
+export const errorHandler = (err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
   console.error("Error:", err)
 
-  if (err instanceof AppError) {
+  if (isAppError(err)) {
     sendError(res, err.message, err.statusCode, err.details)
     return
   }
@@ -25,7 +31,12 @@ export const errorHandler = (err: Error | AppError, _req: Request, res: Response
     return
   }
 
-  sendError(res, err.message || "Internal server error", 500)
+  if (err instanceof Error) {
+    sendError(res, err.message || "Internal server error", 500)
+    return
+  }
+
+  sendError(res, "Internal server error", 500)
 }
 
 export const validateRequest =
@@ -36,7 +47,7 @@ export const validateRequest =
       next()
     } catch (error) {
       const message = error instanceof Error ? error.message : "Validation error"
-      throw new AppError(400, message)
+      throw createAppError(400, message)
     }
   }
 

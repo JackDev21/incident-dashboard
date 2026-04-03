@@ -1,6 +1,6 @@
 import type { Incident, UpdateIncidentInput } from "./incident.types"
 import { IncidentModel } from "./incident.model"
-import { AppError } from "../../middleware"
+import { createAppError } from "../../middleware"
 
 export const getAllIncidents = async (): Promise<Incident[]> => {
   return IncidentModel.find().sort({ createdAt: -1 })
@@ -9,7 +9,7 @@ export const getAllIncidents = async (): Promise<Incident[]> => {
 export const getIncidentById = async (id: string): Promise<Incident> => {
   const incident = await IncidentModel.findById(id)
   if (!incident) {
-    throw new AppError(404, `Incident with ID ${id} not found`)
+    throw createAppError(404, `Incident with ID ${id} not found`)
   }
   return incident
 }
@@ -31,7 +31,7 @@ export const createIncident = async (data: {
     return await incident.save()
   } catch (error) {
     if (error instanceof Error) {
-      throw new AppError(400, `Failed to create incident: ${error.message}`)
+      throw createAppError(400, `Failed to create incident: ${error.message}`)
     }
     throw error
   }
@@ -44,15 +44,15 @@ export const updateIncident = async (id: string, data: UpdateIncidentInput): Pro
       runValidators: true,
     })
     if (!incident) {
-      throw new AppError(404, `Incident with ID ${id} not found`)
+      throw createAppError(404, `Incident with ID ${id} not found`)
     }
     return incident
   } catch (error) {
-    if (error instanceof AppError) {
+    if (error instanceof Error && "statusCode" in error) {
       throw error
     }
     if (error instanceof Error) {
-      throw new AppError(400, `Failed to update incident: ${error.message}`)
+      throw createAppError(400, `Failed to update incident: ${error.message}`)
     }
     throw error
   }
@@ -61,6 +61,6 @@ export const updateIncident = async (id: string, data: UpdateIncidentInput): Pro
 export const deleteIncident = async (id: string): Promise<void> => {
   const incident = await IncidentModel.findByIdAndDelete(id)
   if (!incident) {
-    throw new AppError(404, `Incident with ID ${id} not found`)
+    throw createAppError(404, `Incident with ID ${id} not found`)
   }
 }

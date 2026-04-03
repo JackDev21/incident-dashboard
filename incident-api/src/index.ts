@@ -3,7 +3,7 @@ import express from "express"
 import cors from "cors"
 import { connectDB } from "./config/db"
 import incidentRoutes from "./modules/incidents/incident.routes"
-import { errorHandler, AppError } from "./middleware/errorHandler"
+import { errorHandler } from "./middleware/errorHandler"
 import { requestLogger, notFound } from "./middleware"
 
 const app = express()
