@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom"
 import { Header } from "../Header"
+import { ChatBubble } from "@/features/chat/components/ChatBubble"
 import styles from "./Layout.module.scss"
 
 export const Layout = () => {
@@ -11,6 +12,7 @@ export const Layout = () => {
           <Outlet />
         </div>
       </main>
+      <ChatBubble />
     </div>
   )
 }
