@@ -1,14 +1,24 @@
 const BASE_URL = `${import.meta.env.VITE_API_URL}/chat`
 
+type AppliedFilters = {
+  status?: string
+  priority?: string
+  assignee?: string
+  fromDate?: string
+  toDate?: string
+} | null
+
 type ChatApiResponse = {
   success?: boolean
-  data?: { answer: string }
+  data?: { answer: string; appliedFilters: AppliedFilters }
   message?: string
 }
 
 type HistoryMessage = { role: "user" | "assistant"; content: string }
 
-export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<string> => {
+export type ChatResult = { answer: string; appliedFilters: AppliedFilters }
+
+export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<ChatResult> => {
   const response = await fetch(`${BASE_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -21,5 +31,8 @@ export const queryChat = async (question: string, history: HistoryMessage[] = []
     throw new Error(payload.message ?? "Error querying chat")
   }
 
-  return payload.data?.answer ?? "No response received."
+  return {
+    answer: payload.data?.answer ?? "No response received.",
+    appliedFilters: payload.data?.appliedFilters ?? null,
+  }
 }

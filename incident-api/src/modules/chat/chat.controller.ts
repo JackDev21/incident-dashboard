@@ -13,6 +13,6 @@ export const messageChat = async (req: Request, res: Response): Promise<void> =>
     ? req.body.history
     : []
 
-  const answer = await chatService.answerQuestion(question, history)
-  sendSuccess(res, { answer }, "Answer generated successfully")
+  const { answer, appliedFilters } = await chatService.answerQuestion(question, history)
+  sendSuccess(res, { answer, appliedFilters }, "Answer generated successfully")
 }

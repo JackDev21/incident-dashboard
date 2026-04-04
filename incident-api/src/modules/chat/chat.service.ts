@@ -141,7 +141,7 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<string>
 export const answerQuestion = async (
   question: string,
   history: Array<{ role: "user" | "assistant"; content: string }> = [],
-): Promise<string> => {
+): Promise<{ answer: string; appliedFilters: IncidentFilters | null }> => {
   const apiKey = process.env.LLM_API_KEY
   const model = process.env.LLM_MODEL || "mistral-small-latest"
   const llmBaseUrl = process.env.LLM_BASE_URL || "https://api.mistral.ai/v1/chat/completions"
@@ -167,8 +167,7 @@ export const answerQuestion = async (
   const toolCall = firstMessage?.tool_calls?.[0]
 
   if (!toolCall) {
-    // LLM answered directly without calling the tool
-    return firstMessage?.content?.trim() ?? "No response generated."
+    return { answer: firstMessage?.content?.trim() ?? "No response generated.", appliedFilters: null }
   }
 
   // Execute the tool on our backend
@@ -195,5 +194,6 @@ export const answerQuestion = async (
     throw createAppError(502, "LLM returned an empty response")
   }
 
-  return answer
+  const appliedFilters = Object.keys(toolArgs).length > 0 ? toolArgs : null
+  return { answer, appliedFilters }
 }
