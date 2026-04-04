@@ -1,6 +1,6 @@
 # Incident Dashboard
 
-Frontend application built with **React** and **TypeScript** for the **Incident Management System**. This project provides a modern, responsive interface to visualize and manage incidents.
+Frontend application built with **React** and **TypeScript** for the **Incident Management System**. This project provides a modern, responsive interface to visualize and manage incidents, with an integrated AI chat assistant.
 
 For more details about the overall project, check the [Root README](../README.md).
 
@@ -12,13 +12,15 @@ This dashboard is designed to:
 
 - **Visualize incidents** in a user-friendly interface.
 - **Interact with the backend API** (`incident-api`) to manage incidents.
+- **Filter incidents** by status, priority, and assignee.
+- **Query incidents using natural language** via a floating AI chat assistant.
 - **Follow best practices** for scalability, maintainability, and separation of concerns.
 
 ---
 
 ## 🛠️ Technologies
 
-- **Framework**: React
+- **Framework**: React 19
 - **Language**: TypeScript
 - **Build Tool**: Vite
 - **Styling**: SCSS + CSS Modules
@@ -35,17 +37,25 @@ The project follows a **feature-based architecture** to ensure scalability and m
 
 ```txt
 src/
-  app/                # Global configuration (router, providers)
+  app/
+    router/             # Route definitions (AppRouter)
   components/
-    ui/               # Reusable UI components (Button, Card, etc.)
-    layout/           # Layout components (global structure)
+    ui/                 # Reusable UI primitives (Button, Card, Badge, Modal)
+    layout/             # App layout and Header
   features/
-    incidents/        # Incident domain
-      components/     # Domain-specific components (IncidentCard, IncidentForm)
-      pages/          # Views (IncidentList, IncidentDetail, CreateIncident)
-      services/       # Data access layer (API calls)
-      types/          # Domain types (Incident, IncidentStatus, etc.)
-  styles/           # Global styles and variables
+    incidents/          # Incident domain
+      components/       # IncidentCard, IncidentDetail, IncidentFilters, EmptyIncidentState
+      hooks/            # useIncidents, useIncidentDetails
+      pages/            # IncidentListPage, IncidentDetailPage, CreateIncidentPage
+      services/         # incidents.service.ts (API calls)
+      types/            # Incident, IncidentStatus, IncidentPriority
+      utils/            # incidentBadgeVariants
+    chat/               # Chat assistant feature
+      components/       # ChatBubble (floating panel)
+      context/          # ChatFiltersContext, ChatFiltersProvider, useChatFilters
+      hooks/            # useChat
+      services/         # chat.service.ts (API calls)
+  styles/               # Global styles and variables
 ```
 
 ---
@@ -57,47 +67,46 @@ The frontend follows a **decoupled architecture** where:
 1. **UI Components** (pages, components) interact with **services** to fetch or send data.
 2. **Services** communicate with the **backend API** (`incident-api`).
 3. **State management** is handled by **React Query** for caching and synchronization.
+4. **Chat filters** propagate from chat responses to the incident list via shared context.
 
 ```mermaid
- graph TD
-   A[UI Components] --> B[Services]
-   B --> C[Backend API (incident-api)]
+graph TD
+  A[UI Components] --> B[Services]
+  B --> C[Backend API]
+  D[ChatBubble] --> E[chat.service]
+  E --> C
+  C --> F[appliedFilters]
+  F --> G[ChatFiltersContext]
+  G --> A
 ```
 
 ---
 
 ## 🧩 Key Features
 
-### Reusable UI Components
-
-A base UI layer has been created to ensure consistency and reusability:
-
-- `Button`
-- `Card`
-- `Modal`
-
-Example:
-
-```tsx
-<Button label="Create Incident" variant="primary" onClick={handleCreate} />
-```
-
-Features:
-
-- **Typed props** for better developer experience.
-- **Configurable variants** (e.g., `primary`, `secondary`).
-- **Encapsulated styles** using CSS Modules.
-
----
-
 ### Incident Management
 
-The main functionality includes:
+- **Incident List**: Responsive grid with filtering by status, priority, and assignee.
+- **Incident Detail**: Shows full incident info; allows inline status update via dropdown.
+- **Create Incident**: Form to report a new incident with title, description, priority, and assignee.
+- **Delete Incident**: Delete with confirmation modal to prevent accidental deletion.
 
-- **Incident List**: Displays all incidents in a responsive grid.
-- **Incident Detail**: Shows detailed information about a specific incident.
-- **Create/Edit Incident**: Forms to create or update incidents.
-- **Delete Incident**: Option to delete an incident.
+### Chat Assistant
+
+A floating chat panel (powered by the backend's LLM integration) is available on every page:
+
+- Ask natural-language questions about incidents (e.g. _"How many high-priority incidents are open?"_).
+- Supports conversation history for multi-turn queries.
+- When the assistant uses filters to answer, those filters are automatically applied to the incident list view.
+
+### Reusable UI Components
+
+| Component | Description                                       |
+| --------- | ------------------------------------------------- |
+| `Button`  | Variants: `primary`, `secondary`, `ghost`, `icon` |
+| `Card`    | Wrapper with consistent padding and shadow        |
+| `Badge`   | Colored label for status/priority display         |
+| `Modal`   | Confirmation modal used for destructive actions   |
 
 ---
 
@@ -110,42 +119,45 @@ The main functionality includes:
 
 ### Environment Variables
 
-| Variable       | Description            | Example                 |
-| -------------- | ---------------------- | ----------------------- |
-| `VITE_API_URL` | URL of the backend API | `http://localhost:3000` |
+| Variable       | Description                 | Example                     |
+| -------------- | --------------------------- | --------------------------- |
+| `VITE_API_URL` | Base URL of the backend API | `http://localhost:3000/api` |
+
+> ⚠️ `VITE_API_URL` must include the `/api` suffix. Services append `/incidents` and `/chat` to this value.
 
 ---
 
 ### Setup
 
-#### 1. Clone the repository
-
 ```bash
- git clone https://github.com/YOUR_USERNAME/incident-management-system.git
- cd incident-management-system/incident-dashboard
+cd incident-dashboard
+pnpm install
 ```
 
-#### 2. Install dependencies
-
-```bash
- pnpm install
-```
-
-#### 3. Configure environment variables
-
-Create a `.env` file in the root of the `incident-dashboard` directory with the following content:
+Create a `.env.local` file:
 
 ```env
- VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api
 ```
 
-#### 4. Start the development server
+Start the development server:
 
 ```bash
- pnpm dev
+pnpm dev
 ```
 
 The dashboard will be available at `http://localhost:5173`.
+
+---
+
+## 🧭 Routes
+
+| Path                | Description                |
+| ------------------- | -------------------------- |
+| `/`                 | Redirects to `/incidents`  |
+| `/incidents`        | Incident list with filters |
+| `/incidents/create` | Create a new incident      |
+| `/incidents/:id`    | Incident detail            |
 
 ---
 
@@ -161,11 +173,12 @@ Testing is a **planned feature** for this project. The frontend will soon includ
 
 ## 📌 Best Practices
 
-- **Feature-based architecture**: Code is organized by domain (e.g., `incidents`).
+- **Feature-based architecture**: Code is organized by domain (e.g., `incidents`, `chat`).
 - **Reusable components**: UI components are modular and typed.
 - **CSS Modules**: Styles are scoped to components to avoid global conflicts.
 - **Decoupled data access**: Services handle API communication.
-- **Strong typing**: TypeScript ensures type safety across the application.
+- **Strong typing**: TypeScript strict mode ensures type safety across the application.
+- **Path alias**: `@/*` maps to `src/*` for clean imports.
 
 ---
 

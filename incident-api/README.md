@@ -1,6 +1,6 @@
 # Incident API
 
-**Backend service for the Incident Management System**, built with **Node.js**, **Express**, and **MongoDB**. This API provides a RESTful interface for managing incidents, including creation, retrieval, updating, and deletion.
+**Backend service for the Incident Management System**, built with **Node.js**, **Express**, and **MongoDB**. This API provides a RESTful interface for managing incidents, as well as an AI-powered chat endpoint.
 
 For more details about the overall project, check the [Root README](../README.md).
 
@@ -12,6 +12,7 @@ This API is designed to:
 
 - **Store and manage incident data** in a MongoDB database.
 - **Provide a RESTful interface** for frontend applications (e.g., `incident-dashboard`).
+- **Answer natural language questions** about incidents via an AI chat assistant with tool calling.
 - **Ensure type safety** with TypeScript.
 - **Follow best practices** for scalability and maintainability.
 
@@ -39,8 +40,8 @@ incident-api/
 │   ├── config/
 │   │   └── db.ts                           # Database connection
 │   ├── middleware/
-│   │   ├── errorHandler.ts                 # Global error handling
-│   │   └── index.ts                        # Middleware exports
+│   │   ├── errorHandler.ts                 # Global error handling, asyncHandler, validateRequest
+│   │   └── index.ts                        # Middleware exports (requestLogger, notFound)
 │   ├── modules/
 │   │   ├── incidents/
 │   │   │   ├── dtos/
@@ -51,13 +52,18 @@ incident-api/
 │   │   │   ├── incident.service.ts         # Business logic
 │   │   │   ├── incident.types.ts           # TypeScript types
 │   │   │   └── index.ts                    # Module exports
+│   │   ├── chat/
+│   │   │   ├── chat.controller.ts          # Chat request handler
+│   │   │   ├── chat.routes.ts              # Chat routes
+│   │   │   ├── chat.service.ts             # LLM integration + tool calling
+│   │   │   └── index.ts                    # Module exports
 │   │   └── index.ts                        # Modules exports
 │   ├── types/
-│   │   └── common.types.ts                 # Global types
+│   │   └── common.types.ts                 # Global types (ApiResponse, PaginatedResponse)
 │   ├── utils/
-│   │   └── responses.ts                    # Response helpers
+│   │   └── responses.ts                    # Response helpers (sendSuccess, sendError)
 │   └── index.ts                            # Entry point
-├── .env                                    # Environment variables
+├── .env.example                            # Environment variables template
 ├── package.json                            # Project dependencies
 ├── tsconfig.json                           # TypeScript configuration
 └── README.md                               # This file
@@ -67,24 +73,38 @@ incident-api/
 
 ## 🔌 API Endpoints
 
-The API exposes the following endpoints for incident management:
+All routes are served under the `/api` prefix.
 
-| Method | Endpoint         | Description                  | Request Body (JSON)                                       |
-| ------ | ---------------- | ---------------------------- | --------------------------------------------------------- |
-| GET    | `/incidents`     | Retrieve all incidents       | N/A                                                       |
-| GET    | `/incidents/:id` | Retrieve a specific incident | N/A                                                       |
-| POST   | `/incidents`     | Create a new incident        | `{ title, description, priority, assignee }`              |
-| PUT    | `/incidents/:id` | Update an existing incident  | `{ title?, description?, status?, priority?, assignee? }` |
-| DELETE | `/incidents/:id` | Delete an incident           | N/A                                                       |
+### Incidents
+
+| Method | Endpoint             | Description                  | Request Body (JSON)                                       |
+| ------ | -------------------- | ---------------------------- | --------------------------------------------------------- |
+| GET    | `/api/incidents`     | Retrieve all incidents       | N/A                                                       |
+| GET    | `/api/incidents/:id` | Retrieve a specific incident | N/A                                                       |
+| POST   | `/api/incidents`     | Create a new incident        | `{ title, description, priority, assignee }`              |
+| PUT    | `/api/incidents/:id` | Update an existing incident  | `{ title?, description?, status?, priority?, assignee? }` |
+| DELETE | `/api/incidents/:id` | Delete an incident           | N/A                                                       |
+
+### Chat
+
+| Method | Endpoint          | Description                          | Request Body (JSON)      |
+| ------ | ----------------- | ------------------------------------ | ------------------------ |
+| POST   | `/api/chat/query` | Ask the AI assistant about incidents | `{ question, history? }` |
+
+### Health
+
+| Method | Endpoint  | Description  |
+| ------ | --------- | ------------ |
+| GET    | `/health` | Health check |
+
+---
 
 ### Example Requests
 
 #### **Create an Incident**
 
-**Request:**
-
 ```http
-POST /incidents
+POST /api/incidents
 Content-Type: application/json
 
 {
@@ -95,7 +115,7 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
+Response:
 
 ```json
 {
@@ -113,7 +133,7 @@ Content-Type: application/json
 }
 ```
 
-**Validation Error Response:**
+Validation error:
 
 ```json
 {
@@ -122,50 +142,44 @@ Content-Type: application/json
 }
 ```
 
-#### **Get All Incidents**
-
-**Request:**
+#### **Ask the Chat Assistant**
 
 ```http
-GET /incidents
+POST /api/chat/query
+Content-Type: application/json
+
+{
+  "question": "How many high priority incidents are open?",
+  "history": [
+    { "role": "user", "content": "Show incidents assigned to Ana" },
+    { "role": "assistant", "content": "There are 3 incidents assigned to Ana." }
+  ]
+}
 ```
 
-**Response:**
+Response:
 
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": "65a1e4b3c8d6a1b2c3d4e5f6",
-      "title": "Server Down",
-      "description": "The main application server is not responding.",
+  "data": {
+    "answer": "There are 2 open high-priority incidents.",
+    "appliedFilters": {
       "status": "open",
-      "priority": "high",
-      "assignee": "John Doe",
-      "createdAt": "2024-01-12T10:00:00.000Z"
-    },
-    {
-      "id": "65a1e4b3c8d6a1b2c3d4e5f7",
-      "title": "Database Connection Failed",
-      "description": "Unable to connect to the database.",
-      "status": "in progress",
-      "priority": "medium",
-      "assignee": "Jane Smith",
-      "createdAt": "2024-01-11T09:00:00.000Z"
+      "priority": "high"
     }
-  ],
-  "message": "Incidents retrieved successfully"
+  },
+  "message": "Answer generated successfully"
 }
 ```
+
+The `appliedFilters` field is returned when the assistant queries incidents using specific criteria. The frontend uses this to automatically sync the list filters.
 
 ---
 
 ## 📂 Domain Model
 
 ### Incident
-
-An **incident** represents an issue that needs to be tracked and resolved. It has the following properties:
 
 | Field         | Type               | Description                                       | Required | Default Value  |
 | ------------- | ------------------ | ------------------------------------------------- | -------- | -------------- |
@@ -189,41 +203,24 @@ An **incident** represents an issue that needs to be tracked and resolved. It ha
 
 ### Environment Variables
 
-| Variable      | Description                 | Example                                 |
-| ------------- | --------------------------- | --------------------------------------- |
-| `PORT`        | Port for the backend server | `3000`                                  |
-| `MONGODB_URI` | URI for MongoDB connection  | `mongodb://localhost:27017/incident_db` |
+| Variable       | Description                  | Example                                      |
+| -------------- | ---------------------------- | -------------------------------------------- |
+| `PORT`         | Port for the backend server  | `3000`                                       |
+| `MONGODB_URI`  | URI for MongoDB connection   | `mongodb://localhost:27017/incident_db`      |
+| `LLM_API_KEY`  | API key for the LLM provider | `your_llm_api_key_here`                      |
+| `LLM_MODEL`    | Model to use                 | `mistral-small-latest`                       |
+| `LLM_BASE_URL` | LLM API base URL             | `https://api.mistral.ai/v1/chat/completions` |
+| `LLM_PROVIDER` | LLM provider identifier      | `mistral`                                    |
 
----
+> `LLM_API_KEY` is required for the `/api/chat/query` endpoint. The rest of the LLM vars have defaults set in the service.
 
 ### Setup
 
-#### 1. Clone the repository
-
 ```bash
- git clone https://github.com/YOUR_USERNAME/incident-management-system.git
- cd incident-management-system/incident-api
-```
-
-#### 2. Install dependencies
-
-```bash
- pnpm install
-```
-
-#### 3. Configure environment variables
-
-Create a `.env` file in the root of the `incident-api` directory with the following content:
-
-```env
- PORT=3000
- MONGODB_URI=mongodb://localhost:27017/incident_db
-```
-
-#### 4. Start the API
-
-```bash
- pnpm dev
+cd incident-api
+pnpm install
+cp .env.example .env   # fill in MONGODB_URI and LLM_API_KEY at minimum
+pnpm dev
 ```
 
 The API will be available at `http://localhost:3000`.
@@ -243,10 +240,10 @@ Testing is a **planned feature** for this project. The API will soon include:
 ## 📌 Best Practices
 
 - **Separation of concerns**: Routes, controllers, services, and models are properly decoupled.
-- **Validation layer**: Input data is validated using DTOs before processing.
+- **Validation layer**: Input data is validated using functional DTOs before processing.
 - **Centralized error handling**: All errors are caught by a global middleware.
 - **Type safety**: TypeScript is used for all layers with explicit interfaces.
-- **RESTful design**: API follows REST conventions.
+- **RESTful design**: API follows REST conventions (201 on create, 204 on delete).
 - **Environment variables**: Sensitive configuration is managed via `.env`.
 - **Service layer**: Business logic is separated from controllers.
 
@@ -255,7 +252,7 @@ Testing is a **planned feature** for this project. The API will soon include:
 ## 🛠️ Future Improvements
 
 - **Authentication**: Add JWT-based authentication for secure endpoints.
-- **Pagination**: Implement pagination for the `GET /incidents` endpoint.
+- **Pagination**: Implement pagination for the `GET /api/incidents` endpoint.
 - **Filtering and Sorting**: Add query parameters for filtering and sorting incidents.
 - **Rate Limiting**: Protect the API from abuse with rate limiting.
 - **Swagger/OpenAPI**: Add API documentation using Swagger or OpenAPI.
@@ -274,7 +271,7 @@ graph LR
    Service["⚙️ Services"]
    Model["💾 Models"]
    DB["🗄️ MongoDB"]
-   
+
    Client -->|Request| Routes
    Routes -->|Middleware| Validation
    Validation -->|Valid Data| Controller

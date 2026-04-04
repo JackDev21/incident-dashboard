@@ -14,6 +14,7 @@ This system allows users to:
 - **Create, read, update, and delete incidents** via a RESTful API.
 - **Visualize and manage incidents** through a modern, responsive dashboard.
 - **Filter and view incident details** in a user-friendly interface.
+- **Query incidents using natural language** via an AI-powered chat assistant integrated in the dashboard.
 
 The architecture follows **best practices** for scalability, maintainability, and separation of concerns.
 
@@ -61,6 +62,8 @@ The system follows a **decoupled architecture** where the frontend communicates 
 graph LR
   A[Frontend: incident-dashboard] -->|HTTP Requests| B[Backend: incident-api]
   B -->|CRUD Operations| C[MongoDB]
+  A -->|Chat questions| B
+  B -->|LLM tool calls| C
 ```
 
 ### Data Flow
@@ -68,18 +71,21 @@ graph LR
 1. The **frontend** sends HTTP requests to the **backend API**.
 2. The **backend** processes the requests, interacts with the **database**, and returns responses.
 3. The **frontend** displays the data and allows users to interact with it.
+4. The **chat assistant** (floating panel in the dashboard) sends questions to `/api/chat/query`; the backend queries the LLM and returns a natural-language answer plus optional structured filters that are applied automatically to the incident list.
 
 ### API Endpoints
 
-The backend exposes the following endpoints for incident management:
+The backend exposes the following endpoints under the `/api` prefix:
 
-| Method | Endpoint         | Description                  |
-| ------ | ---------------- | ---------------------------- |
-| GET    | `/incidents`     | Retrieve all incidents       |
-| GET    | `/incidents/:id` | Retrieve a specific incident |
-| POST   | `/incidents`     | Create a new incident        |
-| PUT    | `/incidents/:id` | Update an existing incident  |
-| DELETE | `/incidents/:id` | Delete an incident           |
+| Method | Endpoint             | Description                  |
+| ------ | -------------------- | ---------------------------- |
+| GET    | `/api/incidents`     | Retrieve all incidents       |
+| GET    | `/api/incidents/:id` | Retrieve a specific incident |
+| POST   | `/api/incidents`     | Create a new incident        |
+| PUT    | `/api/incidents/:id` | Update an existing incident  |
+| DELETE | `/api/incidents/:id` | Delete an incident           |
+| POST   | `/api/chat/query`    | Ask the AI assistant         |
+| GET    | `/health`            | Health check                 |
 
 For more details, check the [Backend README](./incident-api/README.md).
 
@@ -115,16 +121,24 @@ An **incident** represents an issue that needs to be tracked and resolved. It ha
 
 #### Backend Variables (`incident-api`)
 
-| Variable      | Description                 | Example                                 |
-| ------------- | --------------------------- | --------------------------------------- |
-| `PORT`        | Port for the backend server | `3000`                                  |
-| `MONGODB_URI` | URI for MongoDB connection  | `mongodb://localhost:27017/incident_db` |
+| Variable       | Description                  | Example                                      |
+| -------------- | ---------------------------- | -------------------------------------------- |
+| `PORT`         | Port for the backend server  | `3000`                                       |
+| `MONGODB_URI`  | URI for MongoDB connection   | `mongodb://localhost:27017/incident_db`      |
+| `LLM_API_KEY`  | API key for the LLM provider | `your_llm_api_key_here`                      |
+| `LLM_MODEL`    | Model name to use            | `mistral-small-latest`                       |
+| `LLM_BASE_URL` | Base URL for the LLM API     | `https://api.mistral.ai/v1/chat/completions` |
+| `LLM_PROVIDER` | LLM provider identifier      | `mistral`                                    |
+
+Copy `.env.example` as a starting point: `cp incident-api/.env.example incident-api/.env`
 
 #### Frontend Variables (`incident-dashboard`)
 
-| Variable       | Description            | Example                 |
-| -------------- | ---------------------- | ----------------------- |
-| `VITE_API_URL` | URL of the backend API | `http://localhost:3000` |
+| Variable       | Description                 | Example                     |
+| -------------- | --------------------------- | --------------------------- |
+| `VITE_API_URL` | Base URL of the backend API | `http://localhost:3000/api` |
+
+> ⚠️ `VITE_API_URL` must include the `/api` suffix. The frontend services append `/incidents` and `/chat` to this value.
 
 ---
 
@@ -133,28 +147,22 @@ An **incident** represents an issue that needs to be tracked and resolved. It ha
 #### 1. Clone the repository
 
 ```bash
- git clone https://github.com/YOUR_USERNAME/incident-management-system.git
- cd incident-management-system
+git clone https://github.com/YOUR_USERNAME/incident-management-system.git
+cd incident-management-system
 ```
 
 #### 2. Set up the Backend (`incident-api`)
 
 ```bash
- cd incident-api
- pnpm install
-```
-
-Create a `.env` file in the `incident-api` directory with the following content:
-
-```env
- PORT=3000
- MONGODB_URI=mongodb://localhost:27017/incident_db
+cd incident-api
+pnpm install
+cp .env.example .env   # then fill in your values
 ```
 
 Start the backend:
 
 ```bash
- pnpm dev
+pnpm dev
 ```
 
 The API will be available at `http://localhost:3000`.
@@ -166,20 +174,20 @@ For more details, check the [Backend README](./incident-api/README.md).
 #### 3. Set up the Frontend (`incident-dashboard`)
 
 ```bash
- cd ../incident-dashboard
- pnpm install
+cd ../incident-dashboard
+pnpm install
 ```
 
-Create a `.env` file in the `incident-dashboard` directory with the following content:
+Create a `.env.local` file in the `incident-dashboard` directory:
 
 ```env
- VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000/api
 ```
 
 Start the frontend:
 
 ```bash
- pnpm dev
+pnpm dev
 ```
 
 The dashboard will be available at `http://localhost:5173`.
@@ -217,7 +225,7 @@ Testing is a **planned feature** for this project. Both the **backend** and **fr
 
 ### Frontend
 
-- **Feature-based architecture**: Code is organized by domain (e.g., `incidents`).
+- **Feature-based architecture**: Code is organized by domain (e.g., `incidents`, `chat`).
 - **Reusable components**: UI components are modular and typed.
 - **CSS Modules**: Styles are scoped to components.
 - **Decoupled data access**: Services handle API communication.
