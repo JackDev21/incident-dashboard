@@ -29,6 +29,8 @@ This API is designed to:
   - `TypeScript` (type safety)
   - `dotenv` (environment variables)
   - `cors` (cross-origin resource sharing)
+  - `Jest` + `ts-jest` (unit and integration testing)
+  - `Supertest` (HTTP endpoint testing)
 
 ---
 
@@ -229,11 +231,32 @@ The API will be available at `http://localhost:3000`.
 
 ## 🧪 Testing
 
-Testing is a **planned feature** for this project. The API will soon include:
+Testing is fully configured and currently covers DTOs, services, routes, middleware, database config, and shared utilities.
 
-- **Unit tests** for controllers and services.
-- **Integration tests** for API endpoints.
-- **Test coverage** to ensure reliability.
+- **Test runner**: `Jest` with `ts-jest`
+- **HTTP tests**: `Supertest`
+- **Scripts**:
+  - `pnpm test`
+  - `pnpm test:watch`
+  - `pnpm test:coverage`
+
+To run tests:
+
+```bash
+cd incident-api
+pnpm test
+```
+
+To generate the HTML coverage report:
+
+```bash
+cd incident-api
+pnpm test:coverage
+```
+
+Coverage report output:
+
+- `coverage/lcov-report/index.html`
 
 ---
 
@@ -256,7 +279,8 @@ Testing is a **planned feature** for this project. The API will soon include:
 - **Filtering and Sorting**: Add query parameters for filtering and sorting incidents.
 - **Rate Limiting**: Protect the API from abuse with rate limiting.
 - **Swagger/OpenAPI**: Add API documentation using Swagger or OpenAPI.
-- **Logging**: Implement structured logging for debugging and monitoring.
+- **Structured Logging**: Expand structured logging for production monitoring.
+- **CI Automation**: Add CI pipeline checks for tests and coverage thresholds.
 
 ---
 
