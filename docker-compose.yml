@@ -1,17 +1,7 @@
 version: "3.8"
 
 services:
-  # 1. Base de datos MongoDB
-  mongodb:
-    image: mongo:7.0
-    container_name: incident_mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db # Volumen para que los datos persistan si se apaga el contenedor
-    restart: unless-stopped
-
-  # 2. Backend API
+  # 1. Backend API
   api:
     build:
       context: ./incident-api
@@ -26,7 +16,7 @@ services:
       - CORS_ORIGIN=http://localhost:8080
     restart: unless-stopped
 
-  # 3. Frontend Dashboard
+  # 2. Frontend Dashboard
   dashboard:
     build:
       context: ./incident-dashboard
@@ -39,7 +29,3 @@ services:
     depends_on:
       - api
     restart: unless-stopped
-
-# Declaración del volumen para persistencia de datos
-volumes:
-  mongo_data:
