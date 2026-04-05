@@ -23,16 +23,11 @@ export const IncidentListPage = () => {
 
   const { incidents, assignees, pagination, loading, error, removeIncident } = useIncidents(page, activeFilters)
 
-  // Normalize assignee from chat: find exact match in real assignees list (case-insensitive)
-  const normalizedChatFilters = useMemo(() => {
-    if (!chatFilters) return null
-    const normalizedAssignee = chatFilters.assignee
-      ? (assignees.find((a) => a.toLowerCase().includes(chatFilters.assignee.toLowerCase())) ?? "")
-      : ""
-    return { ...chatFilters, assignee: normalizedAssignee }
-  }, [chatFilters, assignees])
-
-  const effectiveFilters = normalizedChatFilters ?? manualFilters
+  const effectiveFilters = useMemo(() => {
+    if (!activeFilters.assignee) return activeFilters
+    const matched = assignees.find((a) => a.toLowerCase() === activeFilters.assignee.toLowerCase())
+    return { ...activeFilters, assignee: matched ?? activeFilters.assignee }
+  }, [activeFilters, assignees])
 
   const handleFilterChange = (newFilters: IncidentFiltersState) => {
     setPage(1)

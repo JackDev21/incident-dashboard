@@ -15,10 +15,10 @@ export const getAllIncidents = async (
 ): Promise<{ data: Incident[]; total: number; page: number; totalPages: number }> => {
   const skip = (page - 1) * limit
 
-  const query: Record<string, string> = {}
+  const query: Record<string, unknown> = {}
   if (filters.status) query.status = filters.status
   if (filters.priority) query.priority = filters.priority
-  if (filters.assignee) query.assignee = filters.assignee
+  if (filters.assignee) query.assignee = { $regex: filters.assignee, $options: "i" }
 
   const total = await IncidentModel.countDocuments(query)
   const data = await IncidentModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)
