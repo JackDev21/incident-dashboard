@@ -22,7 +22,7 @@ services:
     environment:
       - PORT=3000
       # Permitimos CORS desde el puerto donde expondremos el dashboard (80)
-      - CORS_ORIGIN=http://localhost:80
+      - CORS_ORIGIN=http://localhost:8080
       # Conexión a la BD usando el nombre del servicio de Docker ('mongodb')
       - MONGODB_URI=mongodb://mongodb:27017/incident_db
     depends_on:
