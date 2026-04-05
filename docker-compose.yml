@@ -17,14 +17,14 @@ services:
       context: ./incident-api
       dockerfile: Dockerfile
     container_name: incident_api
+    env_file:
+      - ./incident-api/.env
     ports:
       - "3000:3000"
     environment:
-      - PORT=3000
-      # Permitimos CORS desde el puerto donde expondremos el dashboard (80)
-      - CORS_ORIGIN=http://localhost:8080
-      # Conexión a la BD usando el nombre del servicio de Docker ('mongodb')
+      # Sobreescribimos solo lo que cambia en Docker (la URL de mongo usa el nombre del servicio)
       - MONGODB_URI=mongodb://mongodb:27017/incident_db
+      - CORS_ORIGIN=http://localhost:8080
     depends_on:
       - mongodb
     restart: unless-stopped
