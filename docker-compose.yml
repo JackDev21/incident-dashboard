@@ -22,11 +22,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Sobreescribimos solo lo que cambia en Docker (la URL de mongo usa el nombre del servicio)
-      - MONGODB_URI=mongodb://mongodb:27017/incident_db
+      # En Docker el CORS apunta al puerto del dashboard
       - CORS_ORIGIN=http://localhost:8080
-    depends_on:
-      - mongodb
     restart: unless-stopped
 
   # 3. Frontend Dashboard
@@ -34,6 +31,8 @@ services:
     build:
       context: ./incident-dashboard
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
     container_name: incident_dashboard
     ports:
       - "8080:80" # Mapeamos el puerto 80 de Nginx al puerto 8080 de tu máquina

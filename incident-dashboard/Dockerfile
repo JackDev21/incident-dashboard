@@ -18,6 +18,11 @@ RUN pnpm install --frozen-lockfile
 # Copiamos el resto del código fuente
 COPY . .
 
+# Variable de entorno para la URL de la API (se quema en el build estático)
+# El valor se inyecta desde docker-compose.yml (que lo lee del .env raíz)
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 # Compilamos la aplicación React/Vite
 # Según tu package.json, esto ejecuta 'tsc -b && vite build'
 # El resultado se guardará en la carpeta /dist
