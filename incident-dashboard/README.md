@@ -97,7 +97,10 @@ A floating chat panel (powered by the backend's LLM integration) is available on
 
 - Ask natural-language questions about incidents (e.g. _"How many high-priority incidents are open?"_).
 - Supports conversation history for multi-turn queries.
+- **Case-insensitive assignee search**: writing `"lorena"` or `"LORENA"` returns the same results as `"Lorena"`.
+- **Disambiguation**: if a name matches multiple distinct assignees, the assistant lists them and asks which one you mean before answering.
 - When the assistant uses filters to answer, those filters are automatically applied to the incident list view.
+- **New conversation button** (↺ icon in the chat header): clears the conversation history and resets any filters applied by the chat.
 
 ### Reusable UI Components
 
@@ -114,7 +117,7 @@ A floating chat panel (powered by the backend's LLM integration) is available on
 
 ### Prerequisites
 
-- **Node.js** (v20 or later)
+- **Node.js** (v22 or later)
 - **pnpm** (v9 or later)
 
 ### Environment Variables
@@ -134,7 +137,7 @@ cd incident-dashboard
 pnpm install
 ```
 
-Create a `.env.local` file:
+Create a `.env` file:
 
 ```env
 VITE_API_URL=http://localhost:3000/api

@@ -87,6 +87,8 @@ All routes are served under the `/api` prefix.
 | PUT    | `/api/incidents/:id` | Update an existing incident  | `{ title?, description?, status?, priority?, assignee? }` |
 | DELETE | `/api/incidents/:id` | Delete an incident           | N/A                                                       |
 
+> `GET /api/incidents` supports optional query parameters: `?status=`, `?priority=`, `?assignee=`. The `assignee` filter is case-insensitive (`lorena` matches `Lorena`).
+
 ### Chat
 
 | Method | Endpoint          | Description                          | Request Body (JSON)      |
@@ -177,6 +179,11 @@ Response:
 
 The `appliedFilters` field is returned when the assistant queries incidents using specific criteria. The frontend uses this to automatically sync the list filters.
 
+> **Chat assistant behavior:**
+>
+> - Assignee search is **case-insensitive** (`"lorena"` matches `"Lorena"`).
+> - If a partial name matches **multiple distinct assignees**, the assistant will list them and ask the user to clarify before answering.
+
 ---
 
 ## 📂 Domain Model
@@ -199,9 +206,9 @@ The `appliedFilters` field is returned when the assistant queries incidents usin
 
 ### Prerequisites
 
-- **Node.js** (v20 or later)
-- **pnpm** or **npm**
-- **MongoDB** (running locally or via a cloud service like MongoDB Atlas)
+- **Node.js** (v22 or later)
+- **pnpm** (v9 or later)
+- **MongoDB Atlas** (or a local MongoDB instance)
 
 ### Environment Variables
 

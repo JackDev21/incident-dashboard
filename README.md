@@ -113,9 +113,10 @@ An **incident** represents an issue that needs to be tracked and resolved. It ha
 
 ### Prerequisites
 
-- **Node.js** (v20 or later)
+- **Node.js** (v22 or later)
 - **pnpm** (v9 or later)
-- **MongoDB** (running locally or via a cloud service like MongoDB Atlas)
+- **MongoDB Atlas** (or a local MongoDB instance)
+- **Docker Desktop** (optional, for running the project in containers)
 
 ### Environment Variables
 
@@ -178,7 +179,7 @@ cd ../incident-dashboard
 pnpm install
 ```
 
-Create a `.env.local` file in the `incident-dashboard` directory:
+Create a `.env` file in the `incident-dashboard` directory:
 
 ```env
 VITE_API_URL=http://localhost:3000/api
@@ -193,6 +194,51 @@ pnpm dev
 The dashboard will be available at `http://localhost:5173`.
 
 For more details, check the [Frontend README](./incident-dashboard/README.md).
+
+---
+
+### 🐳 Running with Docker
+
+The project includes full Docker support. Both services are containerized and can be started with a single command.
+
+#### Requirements
+
+- **Docker Desktop** installed and running.
+
+#### Environment setup
+
+Create a `.env` file at the **project root** with the frontend API URL:
+
+```env
+VITE_API_URL=http://localhost:3000/api
+```
+
+Create `incident-api/.env` from the example and fill in your values (see [Backend README](./incident-api/README.md)):
+
+```bash
+cp incident-api/.env.example incident-api/.env
+```
+
+#### Start all services
+
+```bash
+docker compose up --build
+```
+
+This builds and starts:
+
+| Service   | URL                     | Description                    |
+| --------- | ----------------------- | ------------------------------ |
+| Dashboard | <http://localhost:8080> | React frontend served by Nginx |
+| API       | <http://localhost:3000> | Node.js/Express backend        |
+
+> The API connects to your MongoDB Atlas cluster configured in `incident-api/.env`. No local MongoDB container is used.
+
+To stop all services:
+
+```bash
+docker compose down
+```
 
 ---
 
