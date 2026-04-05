@@ -36,7 +36,7 @@ services:
       dockerfile: Dockerfile
     container_name: incident_dashboard
     ports:
-      - "80:80" # Mapeamos el puerto 80 de Nginx al puerto 80 de tu máquina
+      - "8080:80" # Mapeamos el puerto 80 de Nginx al puerto 8080 de tu máquina
     depends_on:
       - api
     restart: unless-stopped
