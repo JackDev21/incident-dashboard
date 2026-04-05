@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
-import { MessageCircle, X, Send, Bot, User } from "lucide-react"
+import { MessageCircle, X, Send, Bot, User, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { useChat, type ChatMessage as ChatMessageType } from "@/features/chat/hooks/useChat"
 import styles from "./ChatBubble.module.scss"
@@ -20,7 +20,7 @@ const ChatMessage = ({ role, children }: ChatMessageProps) => (
 export const ChatBubble = () => {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState("")
-  const { messages, sendMessage, isPending } = useChat()
+  const { messages, sendMessage, isPending, clearMessages } = useChat()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -46,13 +46,23 @@ export const ChatBubble = () => {
               <Bot size={18} />
               <span>Incident Assistant</span>
             </div>
-            <Button
-              variant="ghost"
-              icon={<X size={18} />}
-              onClick={() => setOpen(false)}
-              title="Close chat"
-              className={styles.closeBtn}
-            />
+            <div className={styles.headerActions}>
+              <Button
+                variant="ghost"
+                icon={<RotateCcw size={16} />}
+                onClick={clearMessages}
+                title="New conversation"
+                className={styles.closeBtn}
+                disabled={messages.length === 0 || isPending}
+              />
+              <Button
+                variant="ghost"
+                icon={<X size={18} />}
+                onClick={() => setOpen(false)}
+                title="Close chat"
+                className={styles.closeBtn}
+              />
+            </div>
           </div>
 
           <div className={styles.messages}>

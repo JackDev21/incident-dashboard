@@ -55,6 +55,12 @@
   font-weight: 600;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .closeBtn {
   color: #fff;
   padding: 4px;

@@ -77,7 +77,9 @@ Rules you must always follow:
 2. Base your answer EXCLUSIVELY on the data returned by the tool. Never invent, assume or add data not present in the tool result.
 3. The ONLY valid statuses are: "open", "in progress", "resolved". Do not mention or invent any other status (e.g. "closed", "pending", "done").
 4. For general summary questions (e.g. "how many incidents are there?", "summarize by status"), call the tool with NO filters to get all incidents, then group and count from the returned list.
-5. Be concise and clear.`
+5. Be concise and clear.
+6. Assignee search is case-insensitive. If the user writes a name in any casing (e.g. "lorena", "LORENA", "Lorena"), treat it identically.
+7. After calling the tool, inspect the distinct assignee values in the results. If more than one distinct full name matches the user's input (e.g. the user said "lorena" and results contain both "Lorena García" and "Lorena Ruiz"), do NOT answer yet. List the distinct full names found and ask the user which specific person they mean. Only answer once the user has clarified. Apply this rule for any name, not just "Lorena".`
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

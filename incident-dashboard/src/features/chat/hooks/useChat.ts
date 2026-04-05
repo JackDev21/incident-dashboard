@@ -34,5 +34,10 @@ export const useChat = () => {
     },
   })
 
-  return { messages, sendMessage, isPending }
+  const clearMessages = () => {
+    setMessages([])
+    setChatFilters({ status: "", priority: "", assignee: "" })
+  }
+
+  return { messages, sendMessage, isPending, clearMessages }
 }
