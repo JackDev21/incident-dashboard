@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { IncidentCard } from "@/features/incidents/components/IncidentCard"
 import { EmptyIncidentState } from "@/features/incidents/components/EmptyIncidentState"
 import { IncidentFilters } from "@/features/incidents/components/IncidentFilters"
@@ -6,6 +6,7 @@ import type { IncidentFiltersState } from "@/features/incidents/components/Incid
 import { useIncidents } from "@/features/incidents/hooks/useIncidents"
 import { useChatFilters } from "@/features/chat/context/useChatFilters"
 import { Button } from "@/components/ui/Button"
+import { Pagination } from "@/components/ui/Pagination"
 import { useNavigate } from "react-router-dom"
 import { Plus, MessageCircle } from "lucide-react"
 import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
@@ -13,37 +14,37 @@ import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
 const EMPTY_FILTERS: IncidentFiltersState = { status: "", priority: "", assignee: "" }
 
 export const IncidentListPage = () => {
-  const { incidents, loading, error, removeIncident } = useIncidents()
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<IncidentFiltersState>(EMPTY_FILTERS)
+  const [page, setPage] = useState(1)
+  const [manualFilters, setManualFilters] = useState<IncidentFiltersState>(EMPTY_FILTERS)
   const { chatFilters, setChatFilters } = useChatFilters()
 
-  const assignees = useMemo(() => [...new Set(incidents.map((i) => i.assignee).filter(Boolean))].sort(), [incidents])
+  const activeFilters = chatFilters ?? manualFilters
 
-  useEffect(() => {
-    if (!chatFilters) return
-    // Normalize assignee: find exact match in real assignees list (case-insensitive)
+  const { incidents, assignees, pagination, loading, error, removeIncident } = useIncidents(page, activeFilters)
+
+  // Normalize assignee from chat: find exact match in real assignees list (case-insensitive)
+  const normalizedChatFilters = useMemo(() => {
+    if (!chatFilters) return null
     const normalizedAssignee = chatFilters.assignee
       ? (assignees.find((a) => a.toLowerCase().includes(chatFilters.assignee.toLowerCase())) ?? "")
       : ""
-    setFilters({ ...chatFilters, assignee: normalizedAssignee })
+    return { ...chatFilters, assignee: normalizedAssignee }
   }, [chatFilters, assignees])
 
-  const handleReset = () => {
-    setFilters(EMPTY_FILTERS)
+  const effectiveFilters = normalizedChatFilters ?? manualFilters
+
+  const handleFilterChange = (newFilters: IncidentFiltersState) => {
+    setPage(1)
+    setManualFilters(newFilters)
     setChatFilters(null)
   }
 
-  const filtered = useMemo(
-    () =>
-      incidents.filter((i) => {
-        if (filters.status && i.status !== filters.status) return false
-        if (filters.priority && i.priority !== filters.priority) return false
-        if (filters.assignee && i.assignee.toLowerCase() !== filters.assignee.toLowerCase()) return false
-        return true
-      }),
-    [incidents, filters],
-  )
+  const handleReset = () => {
+    setPage(1)
+    setManualFilters(EMPTY_FILTERS)
+    setChatFilters(null)
+  }
 
   if (loading) {
     return (
@@ -73,8 +74,12 @@ export const IncidentListPage = () => {
         <Button label="New Incident" icon={<Plus size={18} />} onClick={() => navigate("/incidents/create")} />
       </div>
 
-      <IncidentFilters filters={filters} assignees={assignees} onChange={setFilters} onReset={handleReset} />
-
+      <IncidentFilters
+        filters={effectiveFilters}
+        assignees={assignees}
+        onChange={handleFilterChange}
+        onReset={handleReset}
+      />
       {chatFilters && (
         <div className={styles.chatFilterBanner}>
           <MessageCircle size={15} />
@@ -83,16 +88,19 @@ export const IncidentListPage = () => {
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {incidents.length === 0 ? (
         <EmptyIncidentState />
       ) : (
-        <div className={styles.grid}>
-          {filtered.map((incident) => (
-            <div key={incident.id} onClick={() => navigate(`/incidents/${incident.id}`)} className={styles.listItem}>
-              <IncidentCard incident={incident} onDelete={removeIncident} />
-            </div>
-          ))}
-        </div>
+        <>
+          <div className={styles.grid}>
+            {incidents.map((incident) => (
+              <div key={incident.id} onClick={() => navigate(`/incidents/${incident.id}`)} className={styles.listItem}>
+                <IncidentCard incident={incident} onDelete={removeIncident} />
+              </div>
+            ))}
+          </div>
+          <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} onPageChange={setPage} />
+        </>
       )}
     </div>
   )

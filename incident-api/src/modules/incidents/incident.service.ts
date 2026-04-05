@@ -2,8 +2,33 @@ import type { Incident, UpdateIncidentInput } from "./incident.types"
 import { IncidentModel } from "./incident.model"
 import { createAppError } from "../../middleware"
 
-export const getAllIncidents = async (): Promise<Incident[]> => {
-  return IncidentModel.find().sort({ createdAt: -1 })
+type IncidentFilters = {
+  status?: string
+  priority?: string
+  assignee?: string
+}
+
+export const getAllIncidents = async (
+  page: number,
+  limit: number,
+  filters: IncidentFilters = {},
+): Promise<{ data: Incident[]; total: number; page: number; totalPages: number }> => {
+  const skip = (page - 1) * limit
+
+  const query: Record<string, string> = {}
+  if (filters.status) query.status = filters.status
+  if (filters.priority) query.priority = filters.priority
+  if (filters.assignee) query.assignee = filters.assignee
+
+  const total = await IncidentModel.countDocuments(query)
+  const data = await IncidentModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)
+
+  return { data, total, page, totalPages: Math.ceil(total / limit) }
+}
+
+export const getUniqueAssignees = async (): Promise<string[]> => {
+  const assignees = await IncidentModel.distinct("assignee")
+  return (assignees as string[]).filter(Boolean).sort()
 }
 
 export const getIncidentById = async (id: string): Promise<Incident> => {

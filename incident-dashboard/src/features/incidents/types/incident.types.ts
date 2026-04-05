@@ -11,3 +11,10 @@ export type Incident = {
   assignee: string
   createdAt: string
 }
+
+export type PaginatedIncidents = {
+  data: Incident[]
+  total: number
+  page: number
+  totalPages: number
+}

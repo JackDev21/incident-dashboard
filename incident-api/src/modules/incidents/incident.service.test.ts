@@ -4,10 +4,17 @@ import { createIncident, deleteIncident, getAllIncidents, getIncidentById, updat
 
 jest.mock("./incident.model", () => {
   const IncidentModelMock: any = jest.fn()
-  IncidentModelMock.find = jest.fn()
+  IncidentModelMock.find = jest.fn().mockReturnValue({
+    sort: jest.fn().mockReturnValue({
+      skip: jest.fn().mockReturnValue({
+        limit: jest.fn(),
+      }),
+    }),
+  })
   IncidentModelMock.findById = jest.fn()
   IncidentModelMock.findByIdAndUpdate = jest.fn()
   IncidentModelMock.findByIdAndDelete = jest.fn()
+  IncidentModelMock.countDocuments = jest.fn()
   return { IncidentModel: IncidentModelMock }
 })
 
@@ -16,6 +23,7 @@ type MockedIncidentModelType = jest.Mock & {
   findById: jest.Mock
   findByIdAndUpdate: jest.Mock
   findByIdAndDelete: jest.Mock
+  countDocuments: jest.Mock
 }
 
 const MockedIncidentModel = IncidentModel as unknown as MockedIncidentModelType
@@ -27,15 +35,22 @@ describe("incident service", () => {
 
   it("gets all incidents sorted by createdAt desc", async () => {
     const incidents = [{ id: "1", title: "API Down" }]
-    const sortMock = jest.fn().mockResolvedValue(incidents)
+    const sortMock = jest.fn().mockReturnValue({
+      skip: jest.fn().mockReturnValue({
+        limit: jest.fn().mockResolvedValue(incidents),
+      }),
+    })
+    const countDocumentsMock = jest.fn().mockResolvedValue(1)
 
     MockedIncidentModel.find.mockReturnValue({ sort: sortMock })
+    MockedIncidentModel.countDocuments.mockImplementation(countDocumentsMock)
 
-    const result = await getAllIncidents()
+    const result = await getAllIncidents(1, 12)
 
-    expect(MockedIncidentModel.find).toHaveBeenCalledWith()
+    expect(MockedIncidentModel.find).toHaveBeenCalledWith({})
     expect(sortMock).toHaveBeenCalledWith({ createdAt: -1 })
-    expect(result).toEqual(incidents)
+    expect(countDocumentsMock).toHaveBeenCalledWith({})
+    expect(result).toEqual({ data: incidents, total: 1, page: 1, totalPages: 1 })
   })
 
   it("gets one incident by id", async () => {

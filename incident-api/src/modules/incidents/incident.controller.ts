@@ -2,9 +2,23 @@ import type { Request, Response } from "express"
 import * as incidentService from "./incident.service"
 import { sendSuccess } from "../../utils/responses"
 
-export const getIncidents = async (_req: Request, res: Response): Promise<void> => {
-  const incidents = await incidentService.getAllIncidents()
+export const getIncidents = async (req: Request, res: Response): Promise<void> => {
+  const page = Number(req.query.page) || 1
+  const limit = Number(req.query.limit) || 12
+  const filters = {
+    status: typeof req.query.status === "string" ? req.query.status : undefined,
+    priority: typeof req.query.priority === "string" ? req.query.priority : undefined,
+    assignee: typeof req.query.assignee === "string" ? req.query.assignee : undefined,
+  }
+
+  const incidents = await incidentService.getAllIncidents(page, limit, filters)
+
   sendSuccess(res, incidents, "Incidents retrieved successfully")
+}
+
+export const getAssignees = async (_req: Request, res: Response): Promise<void> => {
+  const assignees = await incidentService.getUniqueAssignees()
+  sendSuccess(res, assignees, "Assignees retrieved successfully")
 }
 
 export const getIncidentById = async (req: Request, res: Response): Promise<void> => {

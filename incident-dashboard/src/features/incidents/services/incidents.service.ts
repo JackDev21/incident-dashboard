@@ -1,4 +1,5 @@
-import type { Incident } from "@/features/incidents/types/incident.types"
+import type { Incident, PaginatedIncidents } from "@/features/incidents/types/incident.types"
+import type { IncidentFiltersState } from "@/features/incidents/components/IncidentFilters"
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/incidents`
 
@@ -31,29 +32,42 @@ const apiErrorBackend = async (response: Response, fallback: string): Promise<st
       return payload.message
     }
   } catch {
-    // Ignore JSON parse failures and use fallback.
+    console.error("Failed to parse API error response as JSON")
   }
 
   return `${fallback} (${response.status})`
 }
 
-export const getIncidents = async (): Promise<Incident[]> => {
-  const response = await fetch(BASE_URL)
+export const getIncidents = async (
+  page = 1,
+  limit = 12,
+  filters?: Partial<IncidentFiltersState>,
+): Promise<PaginatedIncidents> => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  if (filters?.status) params.set("status", filters.status)
+  if (filters?.priority) params.set("priority", filters.priority)
+  if (filters?.assignee) params.set("assignee", filters.assignee)
+
+  const response = await fetch(`${BASE_URL}?${params.toString()}`)
+
   await validateHttpResponse(response, "Failed to fetch incidents")
 
   const payload: unknown = await response.json()
 
-  if (Array.isArray(payload)) {
-    return payload as Incident[]
+  const result = responseData<PaginatedIncidents>(payload)
+
+  if (!result) {
+    console.error("Unexpected API response format for incidents:", payload)
+    throw new Error("Unexpected API response format")
   }
 
-  const data = responseData<Incident[]>(payload)
-  if (Array.isArray(data)) {
-    return data
-  }
+  return result
+}
 
-  console.warn("Unexpected API response format for incidents:", payload)
-  return []
+export const getAssignees = async (): Promise<string[]> => {
+  const response = await fetch(`${BASE_URL}/assignees`)
+  await validateHttpResponse(response, "Failed to fetch assignees")
+  return (await readPayload<string[]>(response)) ?? []
 }
 
 export const getIncidentById = async (id: string): Promise<Incident | null> => {
