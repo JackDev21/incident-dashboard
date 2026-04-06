@@ -189,10 +189,7 @@ Testing is a **planned feature** for this project. The frontend will soon includ
 
 - **Authentication**: Add user authentication (e.g., JWT).
 - **Real-time updates**: Use WebSockets or Server-Sent Events (SSE) for live updates.
-- **Dark mode**: Implement a dark/light theme toggle.
-- **Advanced filtering**: Add robust filtering and sorting options.
-- **Pagination**: Implement pagination for incident lists.
-
+- 
 ---
 
 ## 👤 Author

@@ -282,8 +282,6 @@ Coverage report output:
 ## 🛠️ Future Improvements
 
 - **Authentication**: Add JWT-based authentication for secure endpoints.
-- **Pagination**: Implement pagination for the `GET /api/incidents` endpoint.
-- **Filtering and Sorting**: Add query parameters for filtering and sorting incidents.
 - **Rate Limiting**: Protect the API from abuse with rate limiting.
 - **Swagger/OpenAPI**: Add API documentation using Swagger or OpenAPI.
 - **Structured Logging**: Expand structured logging for production monitoring.
