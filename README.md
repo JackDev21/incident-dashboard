@@ -283,9 +283,6 @@ Testing is a **planned feature** for this project. Both the **backend** and **fr
 
 - **Authentication**: Add user authentication (e.g., JWT).
 - **Real-time updates**: Use WebSockets or Server-Sent Events (SSE) for live updates.
-- **Advanced filtering**: Implement more robust filtering and sorting in the dashboard.
-- **Pagination**: Add pagination to the API and dashboard.
-- **Dark mode**: Implement a dark/light theme toggle.
 
 ---
 
