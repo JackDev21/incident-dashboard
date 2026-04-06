@@ -1,9 +1,9 @@
 import { IncidentModel } from "../incidents/incident.model"
+import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../incidents/assignee.utils"
 import { createAppError } from "../../middleware"
+import { SYSTEM_PROMPT } from "./prompt"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-type LLMRole = "system" | "user" | "assistant" | "tool"
 
 type LLMMessage =
   | { role: "system" | "user" | "assistant"; content: string }
@@ -70,18 +70,22 @@ const QUERY_INCIDENTS_TOOL = {
   },
 }
 
-const SYSTEM_PROMPT = `You are an incident management assistant. Today is ${new Date().toISOString().split("T")[0]}.
-
-Rules you must always follow:
-1. Always call the query_incidents tool before answering. Never answer from memory.
-2. Base your answer EXCLUSIVELY on the data returned by the tool. Never invent, assume or add data not present in the tool result.
-3. The ONLY valid statuses are: "open", "in progress", "resolved". Do not mention or invent any other status (e.g. "closed", "pending", "done").
-4. For general summary questions (e.g. "how many incidents are there?", "summarize by status"), call the tool with NO filters to get all incidents, then group and count from the returned list.
-5. Be concise and clear.
-6. Assignee search is case-insensitive. If the user writes a name in any casing (e.g. "lorena", "LORENA", "Lorena"), treat it identically.
-7. After calling the tool, inspect the distinct assignee values in the results. If more than one distinct full name matches the user's input (e.g. the user said "lorena" and results contain both "Lorena García" and "Lorena Ruiz"), do NOT answer yet. List the distinct full names found and ask the user which specific person they mean. Only answer once the user has clarified. Apply this rule for any name, not just "Lorena".`
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+type IncidentQueryResult = {
+  _id: unknown
+  title: string
+  status: "open" | "in progress" | "resolved"
+  priority: "low" | "medium" | "high"
+  assignee: string
+  createdAt: Date
+}
+
+type QueryIncidentsToolResult = {
+  content: string
+  resolvedAssignee?: string
+  matchingAssignees: string[]
+}
 
 const fetchLLM = async (body: Record<string, unknown>, apiKey: string, llmBaseUrl: string): Promise<LLMResponse> => {
   const response = await fetch(llmBaseUrl, {
@@ -106,7 +110,6 @@ const buildMongoFilter = (filters: IncidentFilters): Record<string, unknown> => 
 
   if (filters.status) mongoFilter.status = filters.status
   if (filters.priority) mongoFilter.priority = filters.priority
-  if (filters.assignee) mongoFilter.assignee = { $regex: filters.assignee, $options: "i" }
 
   if (filters.fromDate || filters.toDate) {
     const createdAtFilter: { $gte?: Date; $lte?: Date } = {}
@@ -118,15 +121,31 @@ const buildMongoFilter = (filters: IncidentFilters): Record<string, unknown> => 
   return mongoFilter
 }
 
-const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<string> => {
-  const mongoFilter = buildMongoFilter(args)
-  const incidents = await IncidentModel.find(mongoFilter).sort({ createdAt: -1 }).limit(100).lean()
+const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIncidentsToolResult> => {
+  const mongoFilter = buildMongoFilter({
+    status: args.status,
+    priority: args.priority,
+    fromDate: args.fromDate,
+    toDate: args.toDate,
+  })
+  const incidents = (await IncidentModel.find(mongoFilter).sort({ createdAt: -1 }).lean()) as IncidentQueryResult[]
+  const filteredIncidents = incidents
+    .filter((incident) => matchesAssignee(incident.assignee, args.assignee))
+    .slice(0, 100)
+  const matchingAssignees = getDistinctMatchingAssignees(
+    filteredIncidents.map((incident) => incident.assignee),
+    args.assignee,
+  )
+  const resolvedAssignee = resolveCanonicalAssignee(
+    filteredIncidents.map((incident) => incident.assignee),
+    args.assignee,
+  )
 
-  if (incidents.length === 0) {
-    return JSON.stringify({ total: 0, incidents: [] })
+  if (filteredIncidents.length === 0) {
+    return { content: JSON.stringify({ total: 0, incidents: [] }), resolvedAssignee, matchingAssignees }
   }
 
-  const data = incidents.map((i) => ({
+  const data = filteredIncidents.map((i) => ({
     id: String(i._id),
     title: i.title,
     status: i.status,
@@ -135,7 +154,17 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<string>
     createdAt: i.createdAt,
   }))
 
-  return JSON.stringify({ total: incidents.length, incidents: data })
+  return {
+    content: JSON.stringify({ total: filteredIncidents.length, incidents: data }),
+    resolvedAssignee,
+    matchingAssignees,
+  }
+}
+
+const buildAmbiguousAssigneeResponse = (matchingAssignees: string[]): string => {
+  const options = matchingAssignees.map((assignee) => `- ${assignee}`).join("\n")
+
+  return `He encontrado varias personas que coinciden con ese nombre:\n\n${options}\n\n¿A cuál de ellas te refieres?`
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -176,6 +205,10 @@ export const answerQuestion = async (
   const toolArgs = JSON.parse(toolCall.function.arguments) as IncidentFilters
   const toolResult = await executeQueryIncidentsTool(toolArgs)
 
+  if (toolArgs.assignee && toolResult.matchingAssignees.length > 1) {
+    return { answer: buildAmbiguousAssigneeResponse(toolResult.matchingAssignees), appliedFilters: null }
+  }
+
   // Call 2: LLM generates final answer using tool result
   const secondResponse = await fetchLLM(
     {
@@ -184,7 +217,7 @@ export const answerQuestion = async (
       messages: [
         ...messages,
         { role: "assistant", content: firstMessage?.content ?? "", tool_calls: [toolCall] },
-        { role: "tool", tool_call_id: toolCall.id, name: toolCall.function.name, content: toolResult },
+        { role: "tool", tool_call_id: toolCall.id, name: toolCall.function.name, content: toolResult.content },
       ],
     },
     apiKey,
@@ -196,6 +229,12 @@ export const answerQuestion = async (
     throw createAppError(502, "LLM returned an empty response")
   }
 
-  const appliedFilters = Object.keys(toolArgs).length > 0 ? toolArgs : null
+  const appliedFilters =
+    Object.keys(toolArgs).length > 0
+      ? {
+          ...toolArgs,
+          ...(toolResult.resolvedAssignee ? { assignee: toolResult.resolvedAssignee } : {}),
+        }
+      : null
   return { answer, appliedFilters }
 }

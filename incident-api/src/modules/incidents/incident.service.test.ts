@@ -53,6 +53,28 @@ describe("incident service", () => {
     expect(result).toEqual({ data: incidents, total: 1, page: 1, totalPages: 1 })
   })
 
+  it("filters incidents by assignee accent-insensitively for web filters", async () => {
+    const incidents = [
+      { id: "1", title: "API Down", assignee: "Laura Martín" },
+      { id: "2", title: "Queue delay", assignee: "Laura" },
+    ]
+    const sortMock = jest.fn().mockResolvedValue(incidents)
+
+    MockedIncidentModel.find.mockReturnValue({ sort: sortMock })
+
+    const result = await getAllIncidents(1, 12, { assignee: "laura martin" })
+
+    expect(MockedIncidentModel.find).toHaveBeenCalledWith({})
+    expect(sortMock).toHaveBeenCalledWith({ createdAt: -1 })
+    expect(MockedIncidentModel.countDocuments).not.toHaveBeenCalled()
+    expect(result).toEqual({
+      data: [{ id: "1", title: "API Down", assignee: "Laura Martín" }],
+      total: 1,
+      page: 1,
+      totalPages: 1,
+    })
+  })
+
   it("gets one incident by id", async () => {
     const incident = { id: "incident-1", title: "API Down" }
     MockedIncidentModel.findById.mockResolvedValue(incident)

@@ -1,5 +1,6 @@
 import type { Incident, UpdateIncidentInput } from "./incident.types"
 import { IncidentModel } from "./incident.model"
+import { matchesAssignee } from "./assignee.utils"
 import { createAppError } from "../../middleware"
 
 type IncidentFilters = {
@@ -18,7 +19,19 @@ export const getAllIncidents = async (
   const query: Record<string, unknown> = {}
   if (filters.status) query.status = filters.status
   if (filters.priority) query.priority = filters.priority
-  if (filters.assignee) query.assignee = { $regex: filters.assignee, $options: "i" }
+
+  if (filters.assignee) {
+    const matchingIncidents = (await IncidentModel.find(query).sort({ createdAt: -1 })) as Incident[]
+    const filteredData = matchingIncidents.filter((incident) => matchesAssignee(incident.assignee, filters.assignee))
+    const paginatedData = filteredData.slice(skip, skip + limit)
+
+    return {
+      data: paginatedData,
+      total: filteredData.length,
+      page,
+      totalPages: Math.ceil(filteredData.length / limit),
+    }
+  }
 
   const total = await IncidentModel.countDocuments(query)
   const data = await IncidentModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)

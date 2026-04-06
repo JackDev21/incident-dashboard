@@ -13,6 +13,14 @@ import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
 
 const EMPTY_FILTERS: IncidentFiltersState = { status: "", priority: "", assignee: "" }
 
+const normalizeAssigneeText = (value: string): string =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "")
+    .trim()
+
 export const IncidentListPage = () => {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
@@ -25,7 +33,8 @@ export const IncidentListPage = () => {
 
   const effectiveFilters = useMemo(() => {
     if (!activeFilters.assignee) return activeFilters
-    const matched = assignees.find((a) => a.toLowerCase() === activeFilters.assignee.toLowerCase())
+    const normalizedAssignee = normalizeAssigneeText(activeFilters.assignee)
+    const matched = assignees.find((assignee) => normalizeAssigneeText(assignee) === normalizedAssignee)
     return { ...activeFilters, assignee: matched ?? activeFilters.assignee }
   }, [activeFilters, assignees])
 
