@@ -28,18 +28,24 @@ export const getIncidentById = async (req: Request, res: Response): Promise<void
 }
 
 export const createIncident = async (req: Request, res: Response): Promise<void> => {
-  const incident = await incidentService.createIncident(req.body)
+  const socketId = (req.get("x-socket-id") as string) || undefined
+  console.log(`[API] createIncident received x-socket-id: ${socketId}`)
+  const incident = await incidentService.createIncident(req.body, socketId)
   sendSuccess(res, incident, "Incident created successfully", 201)
 }
 
 export const updateIncident = async (req: Request, res: Response): Promise<void> => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-  const incident = await incidentService.updateIncident(id, req.body)
+  const socketId = (req.get("x-socket-id") as string) || undefined
+  console.log(`[API] updateIncident received x-socket-id: ${socketId}`)
+  const incident = await incidentService.updateIncident(id, req.body, socketId)
   sendSuccess(res, incident, "Incident updated successfully")
 }
 
 export const deleteIncident = async (req: Request, res: Response): Promise<void> => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-  await incidentService.deleteIncident(id)
+  const socketId = (req.get("x-socket-id") as string) || undefined
+  console.log(`[API] deleteIncident received x-socket-id: ${socketId}`)
+  await incidentService.deleteIncident(id, socketId)
   sendSuccess(res, null, "Incident deleted successfully", 204)
 }

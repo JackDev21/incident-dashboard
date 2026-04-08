@@ -1,5 +1,6 @@
 import type { Incident, PaginatedIncidents } from "@/features/incidents/types/incident.types"
 import type { IncidentFiltersState } from "@/features/incidents/components/IncidentFilters"
+import { socket } from "./socket"
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/incidents`
 
@@ -83,11 +84,13 @@ export const getIncidentById = async (id: string): Promise<Incident | null> => {
 }
 
 export const createIncident = async (newIncident: Omit<Incident, "id" | "createdAt">): Promise<Incident> => {
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  if (socket?.id) headers["x-socket-id"] = socket.id
+  console.log("[WS-client] createIncident headers:", headers)
+
   const response = await fetch(BASE_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(newIncident),
   })
 
@@ -100,11 +103,13 @@ export const updateIncident = async (
   id: string,
   updatedFields: Partial<Omit<Incident, "id" | "createdAt">>,
 ): Promise<Incident> => {
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  if (socket?.id) headers["x-socket-id"] = socket.id
+  console.log("[WS-client] updateIncident headers:", headers)
+
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(updatedFields),
   })
 
@@ -114,8 +119,13 @@ export const updateIncident = async (
 }
 
 export const deleteIncident = async (id: string): Promise<void> => {
+  const headers: Record<string, string> = {}
+  if (socket?.id) headers["x-socket-id"] = socket.id
+  console.log("[WS-client] deleteIncident headers:", headers)
+
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: "DELETE",
+    headers,
   })
 
   if (!response.ok && response.status !== 404) {

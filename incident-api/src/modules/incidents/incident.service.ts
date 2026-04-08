@@ -2,6 +2,7 @@ import type { Incident, UpdateIncidentInput } from "./incident.types"
 import { IncidentModel } from "./incident.model"
 import { matchesAssignee } from "./assignee.utils"
 import { createAppError } from "../../middleware"
+import { io } from "../../socket"
 
 type IncidentFilters = {
   status?: string
@@ -52,12 +53,15 @@ export const getIncidentById = async (id: string): Promise<Incident> => {
   return incident
 }
 
-export const createIncident = async (data: {
-  title: string
-  description: string
-  priority: string
-  assignee: string
-}): Promise<Incident> => {
+export const createIncident = async (
+  data: {
+    title: string
+    description: string
+    priority: string
+    assignee: string
+  },
+  socketId?: string,
+): Promise<Incident> => {
   try {
     const incident = new IncidentModel({
       title: data.title,
@@ -66,7 +70,16 @@ export const createIncident = async (data: {
       priority: data.priority,
       assignee: data.assignee,
     })
-    return await incident.save()
+    const saved = await incident.save()
+    if (socketId) {
+      console.log(`[WS] Emitting incident:created to ${io.engine.clientsCount} client(s) excluding ${socketId}`)
+      io.except(socketId).emit("incident:created", saved)
+    } else {
+      console.log(`[WS] Emitting incident:created to ${io.engine.clientsCount} client(s)`)
+      io.emit("incident:created", saved)
+    }
+    console.log("[WS] incident:created emitted")
+    return saved
   } catch (error) {
     if (error instanceof Error) {
       throw createAppError(400, `Failed to create incident: ${error.message}`)
@@ -75,14 +88,21 @@ export const createIncident = async (data: {
   }
 }
 
-export const updateIncident = async (id: string, data: UpdateIncidentInput): Promise<Incident> => {
+export const updateIncident = async (id: string, data: UpdateIncidentInput, socketId?: string): Promise<Incident> => {
   try {
     const incident = await IncidentModel.findByIdAndUpdate(id, data, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
     })
     if (!incident) {
       throw createAppError(404, `Incident with ID ${id} not found`)
+    }
+    if (socketId) {
+      console.log(`[WS] Emitting incident:updated to ${io.engine.clientsCount} client(s) excluding ${socketId}`)
+      io.except(socketId).emit("incident:updated", incident)
+    } else {
+      console.log(`[WS] Emitting incident:updated to ${io.engine.clientsCount} client(s)`)
+      io.emit("incident:updated", incident)
     }
     return incident
   } catch (error) {
@@ -96,9 +116,16 @@ export const updateIncident = async (id: string, data: UpdateIncidentInput): Pro
   }
 }
 
-export const deleteIncident = async (id: string): Promise<void> => {
+export const deleteIncident = async (id: string, socketId?: string): Promise<void> => {
   const incident = await IncidentModel.findByIdAndDelete(id)
   if (!incident) {
     throw createAppError(404, `Incident with ID ${id} not found`)
+  }
+  if (socketId) {
+    console.log(`[WS] Emitting incident:deleted to ${io.engine.clientsCount} client(s) excluding ${socketId}`)
+    io.except(socketId).emit("incident:deleted", { id })
+  } else {
+    console.log(`[WS] Emitting incident:deleted to ${io.engine.clientsCount} client(s)`)
+    io.emit("incident:deleted", { id })
   }
 }

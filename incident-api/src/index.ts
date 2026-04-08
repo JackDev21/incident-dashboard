@@ -1,6 +1,8 @@
 import "dotenv/config"
+import { createServer } from "http"
 import express from "express"
 import cors from "cors"
+import { io } from "./socket"
 import { connectDB } from "./config/db"
 import { incidentRoutes, chatRoutes } from "./modules"
 import { errorHandler } from "./middleware/errorHandler"
@@ -27,10 +29,25 @@ app.use(notFound)
 
 // Global error handler
 app.use(errorHandler)
+
+const httpServer = createServer(app)
+io.attach(httpServer, {
+  cors: {
+    origin: CORS_ORIGIN,
+    methods: ["GET", "POST"],
+  },
+})
+
+io.on("connection", (socket) => {
+  console.log(`🔌 Client connected: ${socket.id}`)
+  socket.on("disconnect", () => {
+    console.log(`❌ Client disconnected: ${socket.id}`)
+  })
+})
 ;(async () => {
   try {
     await connectDB()
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`)
     })
   } catch (err) {

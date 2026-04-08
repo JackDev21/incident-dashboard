@@ -98,12 +98,15 @@ describe("incident routes validation", () => {
       priority: "high",
       assignee: "Ana",
     })
-    expect(mockedCreateIncident).toHaveBeenCalledWith({
-      title: "API Down",
-      description: "Main API is not responding",
-      priority: "high",
-      assignee: "Ana",
-    })
+    expect(mockedCreateIncident).toHaveBeenCalledWith(
+      {
+        title: "API Down",
+        description: "Main API is not responding",
+        priority: "high",
+        assignee: "Ana",
+      },
+      undefined,
+    )
   })
 
   it("returns 200 and incident list when GET /api/incidents succeeds", async () => {
@@ -229,7 +232,7 @@ describe("incident routes validation", () => {
       id: "incident-1",
       status: "resolved",
     })
-    expect(mockedUpdateIncident).toHaveBeenCalledWith("incident-1", { status: "resolved" })
+    expect(mockedUpdateIncident).toHaveBeenCalledWith("incident-1", { status: "resolved" }, undefined)
   })
 
   it("returns 204 when DELETE /api/incidents/:id succeeds", async () => {
@@ -243,7 +246,7 @@ describe("incident routes validation", () => {
     const response = await request(app).delete("/api/incidents/incident-1")
 
     expect(response.status).toBe(204)
-    expect(mockedDeleteIncident).toHaveBeenCalledWith("incident-1")
+    expect(mockedDeleteIncident).toHaveBeenCalledWith("incident-1", undefined)
   })
 
   it("returns 404 when DELETE /api/incidents/:id does not find incident", async () => {
@@ -261,6 +264,6 @@ describe("incident routes validation", () => {
       success: false,
       error: "Incident with ID missing-id not found",
     })
-    expect(mockedDeleteIncident).toHaveBeenCalledWith("missing-id")
+    expect(mockedDeleteIncident).toHaveBeenCalledWith("missing-id", undefined)
   })
 })

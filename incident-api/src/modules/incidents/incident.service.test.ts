@@ -28,6 +28,14 @@ type MockedIncidentModelType = jest.Mock & {
 
 const MockedIncidentModel = IncidentModel as unknown as MockedIncidentModelType
 
+jest.mock("../../socket", () => ({
+  io: {
+    engine: { clientsCount: 1 },
+    emit: jest.fn(),
+    except: jest.fn().mockReturnValue({ emit: jest.fn() }),
+  },
+}))
+
 describe("incident service", () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -157,7 +165,7 @@ describe("incident service", () => {
     expect(MockedIncidentModel.findByIdAndUpdate).toHaveBeenCalledWith(
       "incident-1",
       { status: "resolved" },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     )
     expect(result).toEqual(updatedIncident)
   })

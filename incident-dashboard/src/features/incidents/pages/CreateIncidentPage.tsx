@@ -3,11 +3,15 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/Button"
 import { createIncident } from "../services/incidents.service"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useToast } from "@/app/context/useToast"
+import { socket } from "../services/socket"
+import type { Incident } from "../types/incident.types"
 import styles from "@/features/incidents/pages/CreateIncidentPage.module.scss"
 
 export const CreateIncidentPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { showToast } = useToast()
 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -16,8 +20,10 @@ export const CreateIncidentPage = () => {
 
   const { mutate: create, isPending } = useMutation({
     mutationFn: createIncident,
-    onSuccess: () => {
+    onSuccess: (data: Incident) => {
+      console.log("[Mutation] createIncident success", data)
       queryClient.invalidateQueries({ queryKey: ["incidents"] })
+      showToast("New incident created", "success")
       navigate("/incidents")
     },
   })
@@ -36,7 +42,16 @@ export const CreateIncidentPage = () => {
 
           if (!title.trim() || !description.trim()) return
 
-          create({ title, description, priority, assignee, status: "open" })
+          const payload: Omit<Incident, "id" | "createdAt"> = { title, description, priority, assignee, status: "open" }
+          console.log("[WS] creating incident, socket.id=", socket.id, "connected=", socket.connected)
+          if (!socket.connected) {
+            socket.once("connect", () => {
+              console.log("[WS] socket connected, sending create request")
+              create(payload)
+            })
+          } else {
+            create(payload)
+          }
         }}
       >
         <div className={styles.formGroup}>
