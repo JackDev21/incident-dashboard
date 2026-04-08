@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express"
 import { sendError } from "../utils/responses"
-import { ZodError } from "zod"
+import { z } from "zod"
 
 export interface AppError extends Error {
   statusCode: number
@@ -27,7 +27,7 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
     return
   }
 
-  if (err instanceof ZodError) {
+  if (err instanceof z.ZodError) {
     const details = err.issues.map((e: any) => ({
       path: e.path.join("."),
       message: e.message,
