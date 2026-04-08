@@ -12,6 +12,7 @@ type ChatApiResponse = {
   success?: boolean
   data?: { answer: string; appliedFilters: AppliedFilters }
   message?: string
+  error?: string
 }
 
 type HistoryMessage = { role: "user" | "assistant"; content: string }
@@ -28,7 +29,7 @@ export const queryChat = async (question: string, history: HistoryMessage[] = []
   const payload = (await response.json()) as ChatApiResponse
 
   if (!response.ok) {
-    throw new Error(payload.message ?? "Error querying chat")
+    throw new Error(payload.error ?? payload.message ?? "Error querying chat")
   }
 
   return {

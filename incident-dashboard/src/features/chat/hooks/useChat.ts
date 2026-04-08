@@ -30,7 +30,7 @@ export const useChat = () => {
       }
     },
     onError: (error: Error) => {
-      setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${error.message}` }])
+      setMessages((prev) => [...prev, { role: "assistant", content: error.message }])
     },
   })
 
