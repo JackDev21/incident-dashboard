@@ -1,81 +1,34 @@
-import type { IncidentPriority } from "../incident.types"
+import { z } from "zod"
 
-export interface CreateIncidentDTO {
-  title: string
-  description: string
-  priority: IncidentPriority
-  assignee: string
-}
+// Esquema para la creación de un incidente
+export const CreateIncidentSchema = z.object({
+  title: z.string().min(1, "Title is required").trim(),
+  description: z.string().min(1, "Description is required").trim(),
+  priority: z.enum(["low", "medium", "high"]),
+  assignee: z.string().min(1, "Assignee is required").trim(),
+})
 
+// Esquema para la actualización
+export const UpdateIncidentSchema = z
+  .object({
+    title: z.string().min(1, "Title must be non-empty").trim().optional(),
+    description: z.string().min(1, "Description must be non-empty").trim().optional(),
+    status: z.enum(["open", "in progress", "resolved"]).optional(),
+    priority: z.enum(["low", "medium", "high"]).optional(),
+    assignee: z.string().min(1, "Assignee must be non-empty").trim().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "No valid fields to update",
+  })
+
+export type CreateIncidentDTO = z.infer<typeof CreateIncidentSchema>
+export type UpdateIncidentDTO = z.infer<typeof UpdateIncidentSchema>
+
+// Wrappers for backward compatibility with tests and other parts of the app
 export const validateCreateIncident = (data: unknown): CreateIncidentDTO => {
-  const obj = data as Record<string, unknown>
-
-  if (typeof obj.title !== "string" || obj.title.trim() === "") {
-    throw new Error("Title is required and must be a non-empty string")
-  }
-
-  if (typeof obj.description !== "string" || obj.description.trim() === "") {
-    throw new Error("Description is required and must be a non-empty string")
-  }
-
-  if (!["low", "medium", "high"].includes(obj.priority as string)) {
-    throw new Error("Priority must be one of: low, medium, high")
-  }
-
-  if (typeof obj.assignee !== "string" || obj.assignee.trim() === "") {
-    throw new Error("Assignee is required and must be a non-empty string")
-  }
-
-  return {
-    title: (obj.title as string).trim(),
-    description: (obj.description as string).trim(),
-    priority: obj.priority as IncidentPriority,
-    assignee: (obj.assignee as string).trim(),
-  }
+  return CreateIncidentSchema.parse(data)
 }
 
-export const validateUpdateIncident = (data: unknown): Record<string, unknown> => {
-  const obj = data as Record<string, unknown>
-  const updated: Record<string, unknown> = {}
-
-  if ("title" in obj && obj.title !== undefined) {
-    if (typeof obj.title !== "string" || obj.title.toString().trim() === "") {
-      throw new Error("Title must be a non-empty string")
-    }
-    updated.title = (obj.title as string).trim()
-  }
-
-  if ("description" in obj && obj.description !== undefined) {
-    if (typeof obj.description !== "string" || obj.description.toString().trim() === "") {
-      throw new Error("Description must be a non-empty string")
-    }
-    updated.description = (obj.description as string).trim()
-  }
-
-  if ("status" in obj && obj.status !== undefined) {
-    if (!["open", "in progress", "resolved"].includes(obj.status as string)) {
-      throw new Error("Status must be one of: open, in progress, resolved")
-    }
-    updated.status = obj.status
-  }
-
-  if ("priority" in obj && obj.priority !== undefined) {
-    if (!["low", "medium", "high"].includes(obj.priority as string)) {
-      throw new Error("Priority must be one of: low, medium, high")
-    }
-    updated.priority = obj.priority
-  }
-
-  if ("assignee" in obj && obj.assignee !== undefined) {
-    if (typeof obj.assignee !== "string" || obj.assignee.toString().trim() === "") {
-      throw new Error("Assignee must be a non-empty string")
-    }
-    updated.assignee = (obj.assignee as string).trim()
-  }
-
-  if (Object.keys(updated).length === 0) {
-    throw new Error("No valid fields to update")
-  }
-
-  return updated
+export const validateUpdateIncident = (data: unknown): UpdateIncidentDTO => {
+  return UpdateIncidentSchema.parse(data)
 }

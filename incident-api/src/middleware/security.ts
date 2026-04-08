@@ -1,33 +1,34 @@
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
+import rateLimit from "express-rate-limit"
+import helmet from "helmet"
 
 /**
- * Límite global: Protege la aplicación de ataques DoS básicos.
- * Permite 100 peticiones cada 15 minutos por IP.
+ * Global rate limit: Protects the application from basic DoS attacks.
+ * Allows 100 requests every 15 minutes per IP.
  */
 export const globalRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  limit: 100, 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100,
   message: {
     success: false,
-    error: 'Demasiadas peticiones desde esta IP, por favor intenta más tarde.',
+    error: "Too many requests from this IP, please try again later.",
   },
-  standardHeaders: true, // Retorna info de límite en las cabeceras `RateLimit-*`
-  legacyHeaders: false, // Desactiva las cabeceras `X-RateLimit-*`
-});
+  standardHeaders: true, // Returns rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disables `X-RateLimit-*` headers
+})
 
 /**
- * Límite estricto para el Chat: Protege la API del LLM.
+ * Strict Chat rate limit: Protects the LLM API.
+ * Chat is expensive and slow, so we limit it to 10 questions every 15 minutes.
  */
 export const chatRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   message: {
     success: false,
-    error: 'Has alcanzado el límite de preguntas del chat. Por favor, espera unos minutos.',
+    error: "You have reached the chat question limit. Please wait a few minutes.",
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
+})
 
-export { helmet };
+export { helmet }

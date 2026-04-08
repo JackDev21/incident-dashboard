@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express"
 import { sendError } from "../utils/responses"
+import { ZodError } from "zod"
 
 export interface AppError extends Error {
   statusCode: number
@@ -23,6 +24,15 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
 
   if (isAppError(err)) {
     sendError(res, err.message, err.statusCode, err.details)
+    return
+  }
+
+  if (err instanceof ZodError) {
+    const details = err.issues.map((e: any) => ({
+      path: e.path.join("."),
+      message: e.message,
+    }))
+    sendError(res, "Validation error", 400, details)
     return
   }
 
