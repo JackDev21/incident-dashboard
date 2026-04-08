@@ -99,6 +99,12 @@ const fetchLLM = async (body: Record<string, unknown>, apiKey: string, llmBaseUr
 
   if (!response.ok) {
     const errorText = await response.text()
+
+    // Check if it's a rate limit or capacity exceeded error
+    if (response.status === 429 || errorText.includes("service_tier_capacity_exceeded")) {
+      throw createAppError(429, "I'm sorry, the AI token limit has been exceeded. Please try again later.")
+    }
+
     throw createAppError(502, `LLM API error: ${errorText}`)
   }
 
