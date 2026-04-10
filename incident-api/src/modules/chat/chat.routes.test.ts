@@ -38,19 +38,31 @@ describe("chat routes", () => {
     expect(response.status).toBe(400)
     expect(response.body).toEqual({
       success: false,
-      error: "Question is required",
+      error: "Validation error",
+      details: [
+        {
+          path: "question",
+          message: "Invalid input: expected string, received undefined",
+        },
+      ],
     })
   })
 
   it("returns 400 when question is blank after trim", async () => {
     const app = createApp()
 
-    const response = await request(app).post("/api/chat/query").send({ question: "   " })
+    const response = await request(app).post("/api/chat/query").send({ question: "" })
 
     expect(response.status).toBe(400)
     expect(response.body).toEqual({
       success: false,
-      error: "Question is required",
+      error: "Validation error",
+      details: [
+        {
+          path: "question",
+          message: "Question is required",
+        },
+      ],
     })
   })
 

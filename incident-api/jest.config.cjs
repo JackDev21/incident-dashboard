@@ -6,4 +6,9 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   clearMocks: true,
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/index.ts'],
-}
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: 'tsconfig.json',
+    }],
+  },
+};
