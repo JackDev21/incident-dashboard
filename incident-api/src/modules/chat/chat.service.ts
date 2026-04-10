@@ -1,4 +1,5 @@
 import { IncidentModel } from "../incidents/incident.model"
+import { createIncident } from "../incidents/incident.service"
 import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../incidents/assignee.utils"
 import { createAppError } from "../../middleware"
 import { SYSTEM_PROMPT } from "./prompt"
@@ -66,6 +67,38 @@ const QUERY_INCIDENTS_TOOL = {
           description: "Filter incidents created before this date (YYYY-MM-DD)",
         },
       },
+    },
+  },
+}
+
+const CREATE_INCIDENT_TOOL = {
+  type: "function",
+  function: {
+    name: "create_incident",
+    description:
+      "Create a new incident in the database. Call this when the user wants to report or create a new incident.",
+    parameters: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "A short, descriptive title of the incident",
+        },
+        description: {
+          type: "string",
+          description: "Detailed description of the problem",
+        },
+        priority: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+          description: "Priority level of the incident",
+        },
+        assignee: {
+          type: "string",
+          description: "Name of the person assigned to the incident",
+        },
+      },
+      required: ["title", "description", "priority", "assignee"],
     },
   },
 }
@@ -167,6 +200,31 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
   }
 }
 
+const executeCreateIncidentTool = async (args: {
+  title: string
+  description: string
+  priority: string
+  assignee: string
+}): Promise<{ content: string }> => {
+  try {
+    const incident = await createIncident(args)
+    return {
+      content: JSON.stringify({
+        success: true,
+        message: `Incident created successfully with ID ${incident._id}`,
+        incident,
+      }),
+    }
+  } catch (error: any) {
+    return {
+      content: JSON.stringify({
+        success: false,
+        message: error.message || "Failed to create incident",
+      }),
+    }
+  }
+}
+
 const buildAmbiguousAssigneeResponse = (matchingAssignees: string[]): string => {
   const options = matchingAssignees.map((assignee) => `- ${assignee}`).join("\n")
 
@@ -195,7 +253,7 @@ export const answerQuestion = async (
 
   // Call 1: LLM decides which tool to call and with what arguments
   const firstResponse = await fetchLLM(
-    { model, temperature: 0.1, messages, tools: [QUERY_INCIDENTS_TOOL], tool_choice: "any" },
+    { model, temperature: 0.1, messages, tools: [QUERY_INCIDENTS_TOOL, CREATE_INCIDENT_TOOL], tool_choice: "auto" },
     apiKey,
     llmBaseUrl,
   )
@@ -208,10 +266,23 @@ export const answerQuestion = async (
   }
 
   // Execute the tool on our backend
-  const toolArgs = JSON.parse(toolCall.function.arguments) as IncidentFilters
-  const toolResult = await executeQueryIncidentsTool(toolArgs)
+  const toolArgs = JSON.parse(toolCall.function.arguments)
+  let toolResult: { content: string; resolvedAssignee?: string; matchingAssignees?: string[] }
 
-  if (toolArgs.assignee && toolResult.matchingAssignees.length > 1) {
+  if (toolCall.function.name === "query_incidents") {
+    toolResult = await executeQueryIncidentsTool(toolArgs as IncidentFilters)
+  } else if (toolCall.function.name === "create_incident") {
+    toolResult = await executeCreateIncidentTool(toolArgs)
+  } else {
+    throw createAppError(500, `Unknown tool called: ${toolCall.function.name}`)
+  }
+
+  if (
+    toolCall.function.name === "query_incidents" &&
+    (toolArgs as IncidentFilters).assignee &&
+    toolResult.matchingAssignees &&
+    toolResult.matchingAssignees.length > 1
+  ) {
     return { answer: buildAmbiguousAssigneeResponse(toolResult.matchingAssignees), appliedFilters: null }
   }
 
@@ -236,7 +307,7 @@ export const answerQuestion = async (
   }
 
   const appliedFilters =
-    Object.keys(toolArgs).length > 0
+    toolCall.function.name === "query_incidents" && Object.keys(toolArgs).length > 0
       ? {
           ...toolArgs,
           ...(toolResult.resolvedAssignee ? { assignee: toolResult.resolvedAssignee } : {}),
