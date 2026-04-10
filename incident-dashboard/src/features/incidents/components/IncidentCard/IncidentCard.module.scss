@@ -91,17 +91,14 @@
 }
 
 .avatar {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background-color: var(--bg-app);
-  border: 1px solid var(--border-color);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-secondary);
   flex-shrink: 0;
 }
 

@@ -9,6 +9,29 @@ import styles from "@/features/incidents/components/IncidentCard/IncidentCard.mo
 import type { Incident } from "@/features/incidents/types/incident.types"
 import { getPriorityVariant, getStatusVariant } from "@/features/incidents/utils/incidentBadgeVariants"
 
+// Función para obtener las iniciales del nombre
+const getUserInitials = (name: string): string => {
+  if (!name || typeof name !== "string") return "?"
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word.length > 0)
+  if (words.length === 0) return "?"
+  if (words.length === 1) return words[0].charAt(0).toUpperCase()
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase()
+}
+
+// Función para generar un color basado en el nombre
+const getColorFromName = (name: string): string => {
+  if (!name) return "#6b7280"
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"]
+  return colors[Math.abs(hash) % colors.length]
+}
+
 type IncidentCardProps = {
   incident: Incident
   onDelete?: (id: string) => void
@@ -16,6 +39,8 @@ type IncidentCardProps = {
 
 export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
   const [showModal, setShowModal] = useState(false)
+  const userInitials = getUserInitials(incident.assignee)
+  const avatarColor = getColorFromName(incident.assignee)
 
   const handleDeleteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
@@ -31,7 +56,8 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
     ? new Date(incident.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : "Unknown date"
 
-  const assigneeInitial = incident.assignee?.trim().charAt(0).toUpperCase() || "?"
+  // Log the incident title on each render
+  console.log("Incident rendered:", incident.title)
 
   const isResolved = incident.status === "resolved"
 
@@ -61,8 +87,8 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
 
       <div className={styles.footer}>
         <span className={styles.assignee}>
-          <span className={styles.avatar} aria-hidden="true">
-            {assigneeInitial}
+          <span className={styles.avatar} aria-hidden="true" style={{ backgroundColor: avatarColor, color: "white" }}>
+            {userInitials}
           </span>
           <span>{incident.assignee}</span>
         </span>
