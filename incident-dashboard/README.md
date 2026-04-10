@@ -13,7 +13,8 @@ This dashboard is designed to:
 - **Visualize incidents** in a user-friendly interface.
 - **Interact with the backend API** (`incident-api`) to manage incidents.
 - **Filter incidents** by status, priority, and assignee.
-- **Query incidents using natural language** via a floating AI chat assistant.
+- **Query and create incidents using natural language** via a floating AI chat assistant.
+- **Receive real-time updates** when incidents are created, updated, or deleted by other users.
 - **Follow best practices** for scalability, maintainability, and separation of concerns.
 
 ---
@@ -25,6 +26,7 @@ This dashboard is designed to:
 - **Build Tool**: Vite
 - **Styling**: SCSS + CSS Modules
 - **State Management**: React Query
+- **Real-time**: Socket.io-client
 - **Routing**: React Router DOM
 - **UI Components**: Lucide React (icons)
 - **Package Manager**: pnpm
@@ -78,6 +80,8 @@ graph TD
   C --> F[appliedFilters]
   F --> G[ChatFiltersContext]
   G --> A
+  C -.->|WebSockets| H[Socket Service]
+  H -.->|Invalidate Queries| A
 ```
 
 ---
@@ -86,7 +90,7 @@ graph TD
 
 ### Incident Management
 
-- **Incident List**: Responsive grid with filtering by status, priority, and assignee.
+- **Incident List**: Responsive grid with filtering by status, priority, and assignee. Real-time updates keep the list synchronized.
 - **Incident Detail**: Shows full incident info; allows inline status update via dropdown.
 - **Create Incident**: Form to report a new incident with title, description, priority, and assignee.
 - **Delete Incident**: Delete with confirmation modal to prevent accidental deletion.
@@ -96,8 +100,9 @@ graph TD
 A floating chat panel (powered by the backend's LLM integration) is available on every page:
 
 - Ask natural-language questions about incidents (e.g. _"How many high-priority incidents are open?"_).
+- **Create incidents** directly from the chat by providing the necessary details.
 - Supports conversation history for multi-turn queries.
-- **Case-insensitive assignee search**: writing `"lorena"` or `"LORENA"` returns the same results as `"Lorena"`.
+- **Case-insensitive and accent-insensitive assignee search**: writing `"lorena"` or `"LORENA"` returns the same results as `"Lorena Garc丘a"`.
 - **Disambiguation**: if a name matches multiple distinct assignees, the assistant lists them and asks which one you mean before answering.
 - When the assistant uses filters to answer, those filters are automatically applied to the incident list view.
 - **New conversation button** (↺ icon in the chat header): clears the conversation history and resets any filters applied by the chat.
@@ -188,8 +193,7 @@ Testing is a **planned feature** for this project. The frontend will soon includ
 ## 🛠️ Future Improvements
 
 - **Authentication**: Add user authentication (e.g., JWT).
-- **Real-time updates**: Use WebSockets or Server-Sent Events (SSE) for live updates.
-- 
+
 ---
 
 ## 👤 Author

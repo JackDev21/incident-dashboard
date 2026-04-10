@@ -12,8 +12,10 @@ This API is designed to:
 
 - **Store and manage incident data** in a MongoDB database.
 - **Provide a RESTful interface** for frontend applications (e.g., `incident-dashboard`).
-- **Answer natural language questions** about incidents via an AI chat assistant with tool calling.
-- **Ensure type safety** with TypeScript.
+- **Answer natural language questions and create incidents** via an AI chat assistant with tool calling.
+- **Provide real-time updates** to connected clients using WebSockets.
+- **Ensure type safety and data validation** with TypeScript and Zod.
+- **Protect against abuse** with rate limiting and security headers.
 - **Follow best practices** for scalability and maintainability.
 
 ---
@@ -24,6 +26,11 @@ This API is designed to:
 - **Framework**: Express
 - **Database**: MongoDB (Mongoose ODM)
 - **Language**: TypeScript
+- **Libraries**:
+  - `Socket.io` (real-time updates)
+  - `Zod` (request validation)
+  - `Helmet` (security headers)
+  - `express-rate-limit` (rate limiting)
 - **Development Tools**:
   - `ts-node-dev` (hot reloading)
   - `TypeScript` (type safety)
@@ -79,13 +86,14 @@ All routes are served under the `/api` prefix.
 
 ### Incidents
 
-| Method | Endpoint             | Description                  | Request Body (JSON)                                       |
-| ------ | -------------------- | ---------------------------- | --------------------------------------------------------- |
-| GET    | `/api/incidents`     | Retrieve all incidents       | N/A                                                       |
-| GET    | `/api/incidents/:id` | Retrieve a specific incident | N/A                                                       |
-| POST   | `/api/incidents`     | Create a new incident        | `{ title, description, priority, assignee }`              |
-| PUT    | `/api/incidents/:id` | Update an existing incident  | `{ title?, description?, status?, priority?, assignee? }` |
-| DELETE | `/api/incidents/:id` | Delete an incident           | N/A                                                       |
+| Method | Endpoint                   | Description                  | Request Body (JSON)                                       |
+| ------ | -------------------------- | ---------------------------- | --------------------------------------------------------- |
+| GET    | `/api/incidents`           | Retrieve all incidents       | N/A                                                       |
+| GET    | `/api/incidents/assignees` | Retrieve all assignees       | N/A                                                       |
+| GET    | `/api/incidents/:id`       | Retrieve a specific incident | N/A                                                       |
+| POST   | `/api/incidents`           | Create a new incident        | `{ title, description, priority, assignee }`              |
+| PUT    | `/api/incidents/:id`       | Update an existing incident  | `{ title?, description?, status?, priority?, assignee? }` |
+| DELETE | `/api/incidents/:id`       | Delete an incident           | N/A                                                       |
 
 > `GET /api/incidents` supports optional query parameters: `?status=`, `?priority=`, `?assignee=`. The `assignee` filter is case-insensitive (`lorena` matches `Lorena`).
 
@@ -181,8 +189,9 @@ The `appliedFilters` field is returned when the assistant queries incidents usin
 
 > **Chat assistant behavior:**
 >
-> - Assignee search is **case-insensitive** (`"lorena"` matches `"Lorena"`).
+> - Assignee search is **case-insensitive** and **accent-insensitive** (`"lorena"` matches `"Lorena García"`).
 > - If a partial name matches **multiple distinct assignees**, the assistant will list them and ask the user to clarify before answering.
+> - The assistant can **create incidents** if the user provides the required information (title, description, priority, assignee). If information is missing, it will ask for it.
 
 ---
 
@@ -270,8 +279,10 @@ Coverage report output:
 ## 📌 Best Practices
 
 - **Separation of concerns**: Routes, controllers, services, and models are properly decoupled.
-- **Validation layer**: Input data is validated using functional DTOs before processing.
+- **Validation layer**: Input data (body and query parameters) is validated using Zod schemas before processing.
 - **Centralized error handling**: All errors are caught by a global middleware.
+- **Security**: Helmet is used for security headers, and express-rate-limit protects against DoS attacks and LLM API abuse.
+- **Real-time**: Socket.io is used to broadcast incident changes to connected clients, with connection and message rate limiting.
 - **Type safety**: TypeScript is used for all layers with explicit interfaces.
 - **RESTful design**: API follows REST conventions (201 on create, 204 on delete).
 - **Environment variables**: Sensitive configuration is managed via `.env`.
@@ -282,7 +293,6 @@ Coverage report output:
 ## 🛠️ Future Improvements
 
 - **Authentication**: Add JWT-based authentication for secure endpoints.
-- **Rate Limiting**: Protect the API from abuse with rate limiting.
 - **Swagger/OpenAPI**: Add API documentation using Swagger or OpenAPI.
 - **Structured Logging**: Expand structured logging for production monitoring.
 - **CI Automation**: Add CI pipeline checks for tests and coverage thresholds.

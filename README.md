@@ -14,7 +14,8 @@ This system allows users to:
 - **Create, read, update, and delete incidents** via a RESTful API.
 - **Visualize and manage incidents** through a modern, responsive dashboard.
 - **Filter and view incident details** in a user-friendly interface.
-- **Query incidents using natural language** via an AI-powered chat assistant integrated in the dashboard.
+- **Query and create incidents using natural language** via an AI-powered chat assistant integrated in the dashboard.
+- **Real-time updates** across all connected clients using WebSockets.
 
 The architecture follows **best practices** for scalability, maintainability, and separation of concerns.
 
@@ -39,6 +40,7 @@ The architecture follows **best practices** for scalability, maintainability, an
 - **Framework**: Express
 - **Database**: MongoDB (Mongoose ODM)
 - **Language**: TypeScript
+- **Libraries**: `Socket.io`, `Zod`, `Helmet`, `express-rate-limit`
 - **Development Tools**: `ts-node-dev`, `TypeScript`, `dotenv`, `cors`
 
 ### Frontend (`incident-dashboard`)
@@ -50,6 +52,7 @@ The architecture follows **best practices** for scalability, maintainability, an
 - **State Management**: React Query
 - **Routing**: React Router DOM
 - **UI Components**: Lucide React (icons)
+- **Real-time**: Socket.io-client
 - **Package Manager**: pnpm
 
 ---
@@ -60,10 +63,11 @@ The system follows a **decoupled architecture** where the frontend communicates 
 
 ```mermaid
 graph LR
-  A[Frontend: incident-dashboard] -->|HTTP Requests| B[Backend: incident-api]
+    A[Frontend: incident-dashboard] -->|HTTP Requests| B[Backend: incident-api]
   B -->|CRUD Operations| C[MongoDB]
   A -->|Chat questions| B
   B -->|LLM tool calls| C
+  B -->|WebSocket Events| A
 ```
 
 ### Data Flow
@@ -71,21 +75,23 @@ graph LR
 1. The **frontend** sends HTTP requests to the **backend API**.
 2. The **backend** processes the requests, interacts with the **database**, and returns responses.
 3. The **frontend** displays the data and allows users to interact with it.
-4. The **chat assistant** (floating panel in the dashboard) sends questions to `/api/chat/query`; the backend queries the LLM and returns a natural-language answer plus optional structured filters that are applied automatically to the incident list.
+4. The **chat assistant** (floating panel in the dashboard) sends questions to `/api/chat/query`; the backend queries the LLM and returns a natural-language answer plus optional structured filters that are applied automatically to the incident list. The assistant can also create new incidents on behalf of the user.
+5. **Real-time updates** are broadcasted via WebSockets whenever an incident is created, updated, or deleted, keeping all connected clients in sync.
 
 ### API Endpoints
 
 The backend exposes the following endpoints under the `/api` prefix:
 
-| Method | Endpoint             | Description                  |
-| ------ | -------------------- | ---------------------------- |
-| GET    | `/api/incidents`     | Retrieve all incidents       |
-| GET    | `/api/incidents/:id` | Retrieve a specific incident |
-| POST   | `/api/incidents`     | Create a new incident        |
-| PUT    | `/api/incidents/:id` | Update an existing incident  |
-| DELETE | `/api/incidents/:id` | Delete an incident           |
-| POST   | `/api/chat/query`    | Ask the AI assistant         |
-| GET    | `/health`            | Health check                 |
+| Method | Endpoint                   | Description                  |
+| ------ | -------------------------- | ---------------------------- |
+| GET    | `/api/incidents`           | Retrieve all incidents       |
+| GET    | `/api/incidents/assignees` | Retrieve all assignees       |
+| GET    | `/api/incidents/:id`       | Retrieve a specific incident |
+| POST   | `/api/incidents`           | Create a new incident        |
+| PUT    | `/api/incidents/:id`       | Update an existing incident  |
+| DELETE | `/api/incidents/:id`       | Delete an incident           |
+| POST   | `/api/chat/query`          | Ask the AI assistant         |
+| GET    | `/health`                  | Health check                 |
 
 For more details, check the [Backend README](./incident-api/README.md).
 
@@ -282,7 +288,6 @@ Testing is a **planned feature** for this project. Both the **backend** and **fr
 ## 🛠️ Future Improvements
 
 - **Authentication**: Add user authentication (e.g., JWT).
-- **Real-time updates**: Use WebSockets or Server-Sent Events (SSE) for live updates.
 
 ---
 
