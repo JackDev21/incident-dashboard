@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import { UserService } from "./user.service"
 import { RegisterUserSchema, LoginUserSchema } from "./dtos/user.dto"
+import { ZodError } from "zod"
 
 const userService = new UserService()
 
@@ -18,6 +19,12 @@ export class UserController {
         user: userResponse,
       })
     } catch (error: any) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: error.issues.map((i) => i.message).join(", "),
+          errors: error.issues,
+        })
+      }
       return res.status(400).json({
         message: error.message || "Registration failed",
         errors: error.errors,
@@ -36,6 +43,12 @@ export class UserController {
         token,
       })
     } catch (error: any) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: error.issues.map((i) => i.message).join(", "),
+          errors: error.issues,
+        })
+      }
       return res.status(401).json({
         message: error.message || "Invalid credentials",
       })
