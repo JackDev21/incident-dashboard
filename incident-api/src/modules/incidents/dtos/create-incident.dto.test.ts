@@ -115,6 +115,6 @@ describe("validateUpdateIncident", () => {
   })
 
   it("throws when description is not a string", () => {
-    expect(() => validateUpdateIncident({ description: 123 })).toThrow("Description must be a non-empty string")
+    expect(() => validateUpdateIncident({ description: 123 })).toThrow("Expected string, received number")
   })
 })

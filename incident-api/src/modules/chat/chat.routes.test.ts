@@ -9,6 +9,14 @@ jest.mock("./chat.service", () => ({
   answerQuestion: jest.fn(),
 }))
 
+// Mock auth middleware
+jest.mock("../../middleware/auth", () => ({
+  authMiddleware: (req: any, res: any, next: any) => {
+    req.user = { id: "user-1", email: "test@example.com" }
+    next()
+  },
+}))
+
 describe("chat routes", () => {
   let consoleErrorSpy: jest.SpyInstance
 

@@ -13,6 +13,14 @@ jest.mock("./incident.service", () => ({
   deleteIncident: jest.fn(),
 }))
 
+// Mock auth middleware
+jest.mock("../../middleware/auth", () => ({
+  authMiddleware: (req: any, res: any, next: any) => {
+    req.user = { id: "user-1", email: "test@example.com" }
+    next()
+  },
+}))
+
 describe("incident routes validation", () => {
   let consoleErrorSpy: jest.SpyInstance
 
@@ -47,7 +55,13 @@ describe("incident routes validation", () => {
     expect(response.status).toBe(400)
     expect(response.body).toEqual({
       success: false,
-      error: "Title is required and must be a non-empty string",
+      error: "Validation error",
+      details: [
+        {
+          path: "title",
+          message: "Title is required and must be a non-empty string",
+        },
+      ],
     })
   })
 
@@ -104,6 +118,7 @@ describe("incident routes validation", () => {
         description: "Main API is not responding",
         priority: "high",
         assignee: "Ana",
+        creatorId: "user-1",
       },
       undefined,
     )
@@ -201,7 +216,13 @@ describe("incident routes validation", () => {
     expect(response.status).toBe(400)
     expect(response.body).toEqual({
       success: false,
-      error: "No valid fields to update",
+      error: "Validation error",
+      details: [
+        {
+          path: "",
+          message: "No valid fields to update",
+        },
+      ],
     })
   })
 
