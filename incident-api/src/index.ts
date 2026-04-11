@@ -6,12 +6,12 @@ import { helmet, globalRateLimiter, chatRateLimiter } from "./middleware/securit
 import { socketConnectionLimiter } from "./middleware/socketSecurity"
 import { io } from "./socket"
 import { connectDB } from "./config/db"
-import { incidentRoutes, chatRoutes } from "./modules"
+import { incidentRoutes, chatRoutes, userRoutes } from "./modules"
 import { errorHandler } from "./middleware/errorHandler"
 import { requestLogger, notFound } from "./middleware"
 
 const app = express()
-app.set('trust proxy', 1)
+app.set("trust proxy", 1)
 const PORT = process.env.PORT ?? 3000
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "http://localhost:5173"
 
@@ -24,6 +24,7 @@ app.use(requestLogger)
 // Routes
 app.use("/api/incidents", incidentRoutes)
 app.use("/api/chat", chatRateLimiter, chatRoutes)
+app.use("/api/users", userRoutes)
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" })

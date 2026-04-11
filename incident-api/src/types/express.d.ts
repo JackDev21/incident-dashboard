@@ -5,5 +5,9 @@ declare namespace Express {
      * Contiene el resultado parseado por Zod de `req.query`.
      */
     validatedQuery?: unknown
+    user?: {
+      id: string
+      email: string
+    }
   }
 }
