@@ -39,6 +39,14 @@ const apiErrorBackend = async (response: Response, fallback: string): Promise<st
   return `${fallback} (${response.status})`
 }
 
+export const getAuthHeaders = (): Record<string, string> => {
+  const token = localStorage.getItem("auth_token")
+  if (token && token !== "undefined" && token !== "null") {
+    return { Authorization: `Bearer ${token}` }
+  }
+  return {}
+}
+
 export const getIncidents = async (
   page = 1,
   limit = 12,
@@ -49,7 +57,9 @@ export const getIncidents = async (
   if (filters?.priority) params.set("priority", filters.priority)
   if (filters?.assignee) params.set("assignee", filters.assignee)
 
-  const response = await fetch(`${BASE_URL}?${params.toString()}`)
+  const response = await fetch(`${BASE_URL}?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  })
 
   await validateHttpResponse(response, "Failed to fetch incidents")
 
@@ -66,13 +76,17 @@ export const getIncidents = async (
 }
 
 export const getAssignees = async (): Promise<string[]> => {
-  const response = await fetch(`${BASE_URL}/assignees`)
+  const response = await fetch(`${BASE_URL}/assignees`, {
+    headers: getAuthHeaders(),
+  })
   await validateHttpResponse(response, "Failed to fetch assignees")
   return (await readPayload<string[]>(response)) ?? []
 }
 
 export const getIncidentById = async (id: string): Promise<Incident | null> => {
-  const response = await fetch(`${BASE_URL}/${id}`)
+  const response = await fetch(`${BASE_URL}/${id}`, {
+    headers: getAuthHeaders(),
+  })
 
   if (response.status === 404) {
     return null
@@ -84,7 +98,7 @@ export const getIncidentById = async (id: string): Promise<Incident | null> => {
 }
 
 export const createIncident = async (newIncident: Omit<Incident, "id" | "createdAt">): Promise<Incident> => {
-  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  const headers: Record<string, string> = { ...getAuthHeaders(), "Content-Type": "application/json" }
   if (socket?.id) headers["x-socket-id"] = socket.id
   console.log("[WS-client] createIncident headers:", headers)
 
@@ -103,7 +117,7 @@ export const updateIncident = async (
   id: string,
   updatedFields: Partial<Omit<Incident, "id" | "createdAt">>,
 ): Promise<Incident> => {
-  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  const headers: Record<string, string> = { ...getAuthHeaders(), "Content-Type": "application/json" }
   if (socket?.id) headers["x-socket-id"] = socket.id
   console.log("[WS-client] updateIncident headers:", headers)
 
@@ -119,7 +133,7 @@ export const updateIncident = async (
 }
 
 export const deleteIncident = async (id: string): Promise<void> => {
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = getAuthHeaders()
   if (socket?.id) headers["x-socket-id"] = socket.id
   console.log("[WS-client] deleteIncident headers:", headers)
 

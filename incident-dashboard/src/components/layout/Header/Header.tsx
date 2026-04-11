@@ -1,8 +1,17 @@
-import { Activity } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Activity, LogOut } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from "@/features/auth/context/AuthContext"
 import styles from "./Header.module.scss"
 
 export const Header = () => {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login")
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -13,10 +22,16 @@ export const Header = () => {
           <span>IncidentHub</span>
         </Link>
 
-        <div className={styles.userProfile}>
-          <div className={styles.avatar}>A</div>
-          <span className={styles.userName}>Admin</span>
-        </div>
+        {user && (
+          <div className={styles.userProfile}>
+            <div className={styles.avatar}>{user.name ? user.name.charAt(0).toUpperCase() : "U"}</div>
+            <span className={styles.userName}>{user.name || "User"}</span>
+            <button className={styles.logoutBtn} onClick={handleLogout} title="Logout">
+              <LogOut size={16} />
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   )

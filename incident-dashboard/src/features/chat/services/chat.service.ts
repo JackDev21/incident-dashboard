@@ -20,9 +20,15 @@ type HistoryMessage = { role: "user" | "assistant"; content: string }
 export type ChatResult = { answer: string; appliedFilters: AppliedFilters }
 
 export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<ChatResult> => {
+  const token = localStorage.getItem("auth_token")
+  const headers: Record<string, string> = { "Content-Type": "application/json" }
+  if (token && token !== "undefined" && token !== "null") {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
   const response = await fetch(`${BASE_URL}/query`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ question, history }),
   })
 

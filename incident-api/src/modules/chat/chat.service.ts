@@ -205,9 +205,9 @@ const executeCreateIncidentTool = async (args: {
   description: string
   priority: string
   assignee: string
-}): Promise<{ content: string }> => {
+}, creatorId?: string): Promise<{ content: string }> => {
   try {
-    const incident = await createIncident(args)
+    const incident = await createIncident({ ...args, creatorId })
     return {
       content: JSON.stringify({
         success: true,
@@ -236,6 +236,7 @@ const buildAmbiguousAssigneeResponse = (matchingAssignees: string[]): string => 
 export const answerQuestion = async (
   question: string,
   history: Array<{ role: "user" | "assistant"; content: string }> = [],
+  creatorId?: string,
 ): Promise<{ answer: string; appliedFilters: IncidentFilters | null }> => {
   const apiKey = process.env.LLM_API_KEY
   const model = process.env.LLM_MODEL || "mistral-small-latest"
@@ -272,7 +273,7 @@ export const answerQuestion = async (
   if (toolCall.function.name === "query_incidents") {
     toolResult = await executeQueryIncidentsTool(toolArgs as IncidentFilters)
   } else if (toolCall.function.name === "create_incident") {
-    toolResult = await executeCreateIncidentTool(toolArgs)
+    toolResult = await executeCreateIncidentTool(toolArgs, creatorId)
   } else {
     throw createAppError(500, `Unknown tool called: ${toolCall.function.name}`)
   }

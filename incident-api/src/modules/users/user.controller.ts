@@ -2,7 +2,9 @@ import { Request, Response } from "express"
 import { UserService } from "./user.service"
 import { RegisterUserSchema, LoginUserSchema } from "./dtos/user.dto"
 import { ZodError } from "zod"
+import jwt from "jsonwebtoken"
 
+const JWT_SECRET = process.env.JWT_SECRET || "super-secret-portfolio-key"
 const userService = new UserService()
 
 export class UserController {
@@ -11,12 +13,16 @@ export class UserController {
       const validatedData = RegisterUserSchema.parse(req.body)
       const user = await userService.createUser(validatedData)
 
+      const userId = (user as any)._id || user.id
+      const token = jwt.sign({ id: userId, email: user.email }, JWT_SECRET, { expiresIn: "24h" })
+
       const userResponse = { ...user }
       delete userResponse.password
 
       return res.status(201).json({
         message: "User registered successfully",
         user: userResponse,
+        token,
       })
     } catch (error: any) {
       if (error instanceof ZodError) {
