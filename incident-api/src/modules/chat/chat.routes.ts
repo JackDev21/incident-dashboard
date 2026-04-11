@@ -2,6 +2,7 @@ import { Router } from "express"
 import { asyncHandler } from "../../middleware"
 import { messageChat } from "./chat.controller"
 import { validateBody } from "../../middleware/validate"
+import { authMiddleware } from "../../middleware/auth"
 import { z } from "zod"
 
 const router = Router()
@@ -17,6 +18,9 @@ const chatSchema = z.object({
     )
     .optional(),
 })
+
+// Protect chat routes
+router.use(authMiddleware)
 
 router.post("/query", validateBody(chatSchema), asyncHandler(messageChat))
 

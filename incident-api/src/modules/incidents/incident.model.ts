@@ -8,6 +8,7 @@ const incidentSchema = new Schema<Incident>(
     status: { type: String, enum: ["open", "in progress", "resolved"], default: "open" },
     priority: { type: String, enum: ["low", "medium", "high"], required: true },
     assignee: { type: String, required: true, trim: true },
+    creatorId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },

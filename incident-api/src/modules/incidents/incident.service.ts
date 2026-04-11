@@ -59,6 +59,7 @@ export const createIncident = async (
     description: string
     priority: string
     assignee: string
+    creatorId?: string
   },
   socketId?: string,
 ): Promise<Incident> => {
@@ -69,6 +70,7 @@ export const createIncident = async (
       status: "open",
       priority: data.priority,
       assignee: data.assignee,
+      creatorId: data.creatorId,
     })
     const saved = await incident.save()
     if (socketId) {

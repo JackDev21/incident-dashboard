@@ -1,4 +1,4 @@
-import type { Document } from "mongoose"
+import type { Document, Types } from "mongoose"
 
 export type IncidentStatus = "open" | "in progress" | "resolved"
 export type IncidentPriority = "low" | "medium" | "high"
@@ -9,6 +9,7 @@ export interface Incident extends Document {
   status: IncidentStatus
   priority: IncidentPriority
   assignee: string
+  creatorId: Types.ObjectId | string
   createdAt: Date
   updatedAt?: Date
 }
@@ -18,6 +19,7 @@ export interface CreateIncidentInput {
   description: string
   priority: IncidentPriority
   assignee: string
+  creatorId?: string
 }
 
 export interface UpdateIncidentInput {

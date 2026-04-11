@@ -9,6 +9,7 @@ import {
 } from "./incident.controller"
 import { asyncHandler } from "../../middleware/errorHandler"
 import { validateBody, validateQuery } from "../../middleware/validate"
+import { authMiddleware } from "../../middleware/auth"
 import { CreateIncidentSchema, UpdateIncidentSchema } from "./dtos/create-incident.dto"
 import { z } from "zod"
 
@@ -27,6 +28,9 @@ const IncidentFilterSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
     .optional(),
 })
+
+// Protect all incident routes
+router.use(authMiddleware)
 
 router.get("/assignees", asyncHandler(getAssignees))
 router.get("/", validateQuery(IncidentFilterSchema), asyncHandler(getIncidents))

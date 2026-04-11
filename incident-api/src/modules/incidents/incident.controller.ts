@@ -26,7 +26,14 @@ export const getIncidentById = async (req: Request, res: Response): Promise<void
 export const createIncident = async (req: Request, res: Response): Promise<void> => {
   const socketId = (req.get("x-socket-id") as string) || undefined
   console.log(`[API] createIncident received x-socket-id: ${socketId}`)
-  const incident = await incidentService.createIncident(req.body, socketId)
+
+  // Add creatorId from authenticated user
+  const incidentData = {
+    ...req.body,
+    creatorId: req.user?.id,
+  }
+
+  const incident = await incidentService.createIncident(incidentData, socketId)
   sendSuccess(res, incident, "Incident created successfully", 201)
 }
 
