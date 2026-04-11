@@ -18,6 +18,10 @@ export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps
     : "Unknown date"
 
   const assigneeInitial = incident.assignee?.trim().charAt(0).toUpperCase() || "?"
+  const creatorName =
+    typeof incident.creatorId === "object" && incident.creatorId?.name
+      ? incident.creatorId.name
+      : null
 
   return (
     <div className={styles.wrapper}>
@@ -49,6 +53,12 @@ export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps
             {incident.assignee}
           </span>
         </div>
+        {creatorName && (
+          <div className={styles.metaItem}>
+            <span className={styles.metaLabel}>Reported by</span>
+            <span className={styles.metaValue}>{creatorName}</span>
+          </div>
+        )}
         <div className={styles.metaItem}>
           <span className={styles.metaLabel}>Created at</span>
           <span className={styles.metaValue}>{formattedDate}</span>

@@ -9,6 +9,7 @@ export type Incident = {
   status: IncidentStatus
   priority: IncidentPriority
   assignee: string
+  creatorId?: string | { _id?: string; id?: string; name: string }
   createdAt: string
 }
 

@@ -22,7 +22,7 @@ export const getAllIncidents = async (
   if (filters.priority) query.priority = filters.priority
 
   if (filters.assignee) {
-    const matchingIncidents = (await IncidentModel.find(query).sort({ createdAt: -1 })) as Incident[]
+    const matchingIncidents = (await IncidentModel.find(query).sort({ createdAt: -1 }).populate("creatorId", "name")) as Incident[]
     const filteredData = matchingIncidents.filter((incident) => matchesAssignee(incident.assignee, filters.assignee))
     const paginatedData = filteredData.slice(skip, skip + limit)
 
@@ -35,7 +35,7 @@ export const getAllIncidents = async (
   }
 
   const total = await IncidentModel.countDocuments(query)
-  const data = await IncidentModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit)
+  const data = await IncidentModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).populate("creatorId", "name")
 
   return { data, total, page, totalPages: Math.ceil(total / limit) }
 }
@@ -46,7 +46,7 @@ export const getUniqueAssignees = async (): Promise<string[]> => {
 }
 
 export const getIncidentById = async (id: string): Promise<Incident> => {
-  const incident = await IncidentModel.findById(id)
+  const incident = await IncidentModel.findById(id).populate("creatorId", "name")
   if (!incident) {
     throw createAppError(404, `Incident with ID ${id} not found`)
   }
@@ -95,7 +95,7 @@ export const updateIncident = async (id: string, data: UpdateIncidentInput, sock
     const incident = await IncidentModel.findByIdAndUpdate(id, data, {
       returnDocument: "after",
       runValidators: true,
-    })
+    }).populate("creatorId", "name")
     if (!incident) {
       throw createAppError(404, `Incident with ID ${id} not found`)
     }

@@ -61,6 +61,12 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
 
   const isResolved = incident.status === "resolved"
 
+  // Extract creator name if it was populated
+  const creatorName =
+    typeof incident.creatorId === "object" && incident.creatorId?.name
+      ? incident.creatorId.name
+      : null
+
   return (
     <Card className={["card", isResolved ? styles.resolved : ""].join(" ").trim()}>
       <div className={styles.header}>
@@ -92,7 +98,10 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
           </span>
           <span>{incident.assignee}</span>
         </span>
-        <span className={styles.date}>{formattedDate}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <span className={styles.date}>{formattedDate}</span>
+          {creatorName && <span className={styles.reporter}>Ref: {creatorName}</span>}
+        </div>
       </div>
 
       {showModal && (
