@@ -168,9 +168,9 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
     toDate: args.toDate,
   })
   const incidents = (await IncidentModel.find(mongoFilter).sort({ createdAt: -1 }).lean()) as IncidentQueryResult[]
-  const filteredIncidents = incidents
-    .filter((incident) => matchesAssignee(incident.assignee, args.assignee))
-    .slice(0, 100)
+  const allFiltered = incidents.filter((incident) => matchesAssignee(incident.assignee, args.assignee))
+  const filteredIncidents = allFiltered.slice(0, 100)
+
   const matchingAssignees = getDistinctMatchingAssignees(
     filteredIncidents.map((incident) => incident.assignee),
     args.assignee,
@@ -181,7 +181,7 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
   )
 
   if (filteredIncidents.length === 0) {
-    return { content: JSON.stringify({ total: 0, incidents: [] }), resolvedAssignee, matchingAssignees }
+    return { content: JSON.stringify({ total: 0, returned: 0, incidents: [] }), resolvedAssignee, matchingAssignees }
   }
 
   const data = filteredIncidents.map((i) => ({
@@ -194,7 +194,7 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
   }))
 
   return {
-    content: JSON.stringify({ total: filteredIncidents.length, incidents: data }),
+    content: JSON.stringify({ total: allFiltered.length, returned: filteredIncidents.length, incidents: data }),
     resolvedAssignee,
     matchingAssignees,
   }
