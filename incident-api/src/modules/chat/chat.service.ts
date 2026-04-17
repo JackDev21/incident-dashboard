@@ -1,8 +1,9 @@
 import { IncidentModel } from "../incidents/incident.model"
-import { createIncident } from "../incidents/incident.service"
+import { createIncident, updateIncident } from "../incidents/incident.service"
 import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../incidents/assignee.utils"
 import { createAppError } from "../../middleware"
 import { SYSTEM_PROMPT } from "./prompt"
+import { IncidentPriority, IncidentStatus } from "../incidents/incident.types"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,39 @@ const CREATE_INCIDENT_TOOL = {
         },
       },
       required: ["title", "description", "priority", "assignee"],
+    },
+  },
+}
+
+const UPDATE_INCIDENT_TOOL = {
+  type: "function",
+  function: {
+    name: "update_incident",
+    description:
+      "Update an existing incident in the database. Use this to change the status, priority, or assignee of an incident.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "The unique ID of the incident to update",
+        },
+        status: {
+          type: "string",
+          enum: ["open", "in progress", "resolved"],
+          description: "New status of the incident",
+        },
+        priority: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+          description: "New priority of the incident",
+        },
+        assignee: {
+          type: "string",
+          description: "New assignee name for the incident",
+        },
+      },
+      required: ["id"],
     },
   },
 }
@@ -200,12 +234,15 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
   }
 }
 
-const executeCreateIncidentTool = async (args: {
-  title: string
-  description: string
-  priority: string
-  assignee: string
-}, creatorId?: string): Promise<{ content: string }> => {
+const executeCreateIncidentTool = async (
+  args: {
+    title: string
+    description: string
+    priority: string
+    assignee: string
+  },
+  creatorId?: string,
+): Promise<{ content: string }> => {
   try {
     const incident = await createIncident({ ...args, creatorId })
     return {
@@ -220,6 +257,35 @@ const executeCreateIncidentTool = async (args: {
       content: JSON.stringify({
         success: false,
         message: error.message || "Failed to create incident",
+      }),
+    }
+  }
+}
+
+const executeUpdateIncidentTool = async (args: {
+  id: string
+  status?: IncidentStatus
+  priority?: IncidentPriority
+  assignee?: string
+}): Promise<{ content: string }> => {
+  try {
+    const incident = await updateIncident(args.id, {
+      status: args.status,
+      priority: args.priority,
+      assignee: args.assignee,
+    })
+    return {
+      content: JSON.stringify({
+        success: true,
+        message: `Incident ${args.id} updated successfully`,
+        incident,
+      }),
+    }
+  } catch (error: any) {
+    return {
+      content: JSON.stringify({
+        success: false,
+        message: error.message || "Failed to update incident",
       }),
     }
   }
@@ -254,7 +320,13 @@ export const answerQuestion = async (
 
   // Call 1: LLM decides which tool to call and with what arguments
   const firstResponse = await fetchLLM(
-    { model, temperature: 0.1, messages, tools: [QUERY_INCIDENTS_TOOL, CREATE_INCIDENT_TOOL], tool_choice: "auto" },
+    {
+      model,
+      temperature: 0.1,
+      messages,
+      tools: [QUERY_INCIDENTS_TOOL, CREATE_INCIDENT_TOOL, UPDATE_INCIDENT_TOOL],
+      tool_choice: "auto",
+    },
     apiKey,
     llmBaseUrl,
   )
@@ -274,6 +346,8 @@ export const answerQuestion = async (
     toolResult = await executeQueryIncidentsTool(toolArgs as IncidentFilters)
   } else if (toolCall.function.name === "create_incident") {
     toolResult = await executeCreateIncidentTool(toolArgs, creatorId)
+  } else if (toolCall.function.name === "update_incident") {
+    toolResult = await executeUpdateIncidentTool(toolArgs)
   } else {
     throw createAppError(500, `Unknown tool called: ${toolCall.function.name}`)
   }
