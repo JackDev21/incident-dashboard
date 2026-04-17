@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { MessageCircle, X, Send, Bot, User, RotateCcw } from "lucide-react"
+import { Link } from "react-router-dom"
+import ReactMarkdown from "react-markdown"
 import { Button } from "@/components/ui/Button"
 import { useChat, type ChatMessage as ChatMessageType } from "@/features/chat/hooks/useChat"
 import styles from "./ChatBubble.module.scss"
@@ -13,7 +15,28 @@ type ChatMessageProps = {
 const ChatMessage = ({ role, children }: ChatMessageProps) => (
   <div className={`${styles.message} ${styles[role]}`}>
     <span className={styles.avatar}>{role === "user" ? <User size={14} /> : <Bot size={14} />}</span>
-    <p className={styles.content}>{children}</p>
+    <div className={styles.content}>
+      {typeof children === "string" ? (
+        <ReactMarkdown
+          components={{
+            a: ({ href, children }) => {
+              if (href?.startsWith("/")) {
+                return <Link to={href}>{children}</Link>
+              }
+              return (
+                <a href={href} target="_blank" rel="noopener noreferrer">
+                  {children}
+                </a>
+              )
+            },
+          }}
+        >
+          {children}
+        </ReactMarkdown>
+      ) : (
+        children
+      )}
+    </div>
   </div>
 )
 

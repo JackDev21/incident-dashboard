@@ -35,6 +35,8 @@ type IncidentFilters = {
   toDate?: string
 }
 
+type ChatAction = "created" | "updated" | null
+
 // ─── Tool definition ─────────────────────────────────────────────────────────
 
 const QUERY_INCIDENTS_TOOL = {
@@ -291,19 +293,13 @@ const executeUpdateIncidentTool = async (args: {
   }
 }
 
-const buildAmbiguousAssigneeResponse = (matchingAssignees: string[]): string => {
-  const options = matchingAssignees.map((assignee) => `- ${assignee}`).join("\n")
-
-  return `He encontrado varias personas que coinciden con ese nombre:\n\n${options}\n\n¿A cuál de ellas te refieres?`
-}
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export const answerQuestion = async (
   question: string,
   history: Array<{ role: "user" | "assistant"; content: string }> = [],
   creatorId?: string,
-): Promise<{ answer: string; appliedFilters: IncidentFilters | null }> => {
+): Promise<{ answer: string; appliedFilters: IncidentFilters | null; action: ChatAction }> => {
   const apiKey = process.env.LLM_API_KEY
   const model = process.env.LLM_MODEL || "mistral-small-latest"
   const llmBaseUrl = process.env.LLM_BASE_URL || "https://api.mistral.ai/v1/chat/completions"
@@ -335,30 +331,24 @@ export const answerQuestion = async (
   const toolCall = firstMessage?.tool_calls?.[0]
 
   if (!toolCall) {
-    return { answer: firstMessage?.content?.trim() ?? "No response generated.", appliedFilters: null }
+    return { answer: firstMessage?.content?.trim() ?? "No response generated.", appliedFilters: null, action: null }
   }
 
   // Execute the tool on our backend
   const toolArgs = JSON.parse(toolCall.function.arguments)
   let toolResult: { content: string; resolvedAssignee?: string; matchingAssignees?: string[] }
+  let action: ChatAction = null
 
   if (toolCall.function.name === "query_incidents") {
     toolResult = await executeQueryIncidentsTool(toolArgs as IncidentFilters)
   } else if (toolCall.function.name === "create_incident") {
     toolResult = await executeCreateIncidentTool(toolArgs, creatorId)
+    action = "created"
   } else if (toolCall.function.name === "update_incident") {
     toolResult = await executeUpdateIncidentTool(toolArgs)
+    action = "updated"
   } else {
     throw createAppError(500, `Unknown tool called: ${toolCall.function.name}`)
-  }
-
-  if (
-    toolCall.function.name === "query_incidents" &&
-    (toolArgs as IncidentFilters).assignee &&
-    toolResult.matchingAssignees &&
-    toolResult.matchingAssignees.length > 1
-  ) {
-    return { answer: buildAmbiguousAssigneeResponse(toolResult.matchingAssignees), appliedFilters: null }
   }
 
   // Call 2: LLM generates final answer using tool result
@@ -388,5 +378,5 @@ export const answerQuestion = async (
           ...(toolResult.resolvedAssignee ? { assignee: toolResult.resolvedAssignee } : {}),
         }
       : null
-  return { answer, appliedFilters }
+  return { answer, appliedFilters, action }
 }

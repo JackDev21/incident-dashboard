@@ -10,14 +10,14 @@ type AppliedFilters = {
 
 type ChatApiResponse = {
   success?: boolean
-  data?: { answer: string; appliedFilters: AppliedFilters }
+  data?: { answer: string; appliedFilters: AppliedFilters; action?: "created" | "updated" | null }
   message?: string
   error?: string
 }
 
 type HistoryMessage = { role: "user" | "assistant"; content: string }
 
-export type ChatResult = { answer: string; appliedFilters: AppliedFilters }
+export type ChatResult = { answer: string; appliedFilters: AppliedFilters; action?: 'created' | 'updated' | null }
 
 export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<ChatResult> => {
   const token = localStorage.getItem("auth_token")
@@ -41,5 +41,6 @@ export const queryChat = async (question: string, history: HistoryMessage[] = []
   return {
     answer: payload.data?.answer ?? "No response received.",
     appliedFilters: payload.data?.appliedFilters ?? null,
+    action: payload.data?.action ?? null,
   }
 }

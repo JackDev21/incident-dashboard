@@ -81,6 +81,7 @@ describe("chat routes", () => {
     mockedAnswerQuestion.mockResolvedValue({
       answer: "There are 3 open incidents.",
       appliedFilters: { status: "open" },
+      action: null,
     })
 
     const response = await request(app).post("/api/chat/query").send({ question: "How many open incidents are there?" })
@@ -104,6 +105,7 @@ describe("chat routes", () => {
     mockedAnswerQuestion.mockResolvedValue({
       answer: "Two incidents are assigned to Ana.",
       appliedFilters: { assignee: "Ana" },
+      action: null,
     })
 
     const history = [

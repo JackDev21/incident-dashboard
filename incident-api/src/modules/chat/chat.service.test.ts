@@ -85,6 +85,7 @@ describe("chat service", () => {
       answer:
         "Solo puedo ayudarte con consultas sobre incidencias. Si quieres, puedo buscar, resumir o filtrar incidencias.",
       appliedFilters: null,
+      action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -111,6 +112,7 @@ describe("chat service", () => {
       answer:
         "Solo puedo ayudarte con consultas sobre incidencias. Si quieres, puedo buscar, resumir o filtrar incidencias.",
       appliedFilters: null,
+      action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -136,6 +138,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "Laura Martín",
       appliedFilters: null,
+      action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -152,6 +155,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "Simple answer",
       appliedFilters: null,
+      action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -168,6 +172,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "",
       appliedFilters: null,
+      action: null,
     })
   })
 
@@ -222,6 +227,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "There are 2 open incidents assigned to Ana.",
       appliedFilters: toolArgs,
+      action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
@@ -271,6 +277,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "Laura Martín has 3 incidents.",
       appliedFilters: { assignee: "Laura Martín" },
+      action: null,
     })
   })
 
@@ -278,24 +285,38 @@ describe("chat service", () => {
     const fetchMock = global.fetch as unknown as jest.Mock
     const toolArgs = { assignee: "Carlos" }
 
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        choices: [
-          {
-            message: {
-              tool_calls: [
-                {
-                  id: "tool-1",
-                  type: "function",
-                  function: { name: "query_incidents", arguments: JSON.stringify(toolArgs) },
-                },
-              ],
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                tool_calls: [
+                  {
+                    id: "tool-1",
+                    type: "function",
+                    function: { name: "query_incidents", arguments: JSON.stringify(toolArgs) },
+                  },
+                ],
+              },
             },
-          },
-        ],
-      }),
-    })
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content:
+                  "He encontrado varias personas que coinciden con ese nombre:\n\n- Carlos\n- Carlos Ruiz\n\n¿A cuál de ellas te refieres?",
+              },
+            },
+          ],
+        }),
+      })
 
     mockIncidentFindChain([
       {
@@ -321,9 +342,10 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer:
         "He encontrado varias personas que coinciden con ese nombre:\n\n- Carlos\n- Carlos Ruiz\n\n¿A cuál de ellas te refieres?",
-      appliedFilters: null,
+      appliedFilters: { assignee: "Carlos" },
+      action: null,
     })
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it("matches any assignee name regardless of case or diacritics", async () => {
@@ -376,9 +398,11 @@ describe("chat service", () => {
     const result = await answerQuestion("Show incidents assigned to jose alvarez")
 
     expect(MockedIncidentModel.find).toHaveBeenCalledWith({})
+
     expect(result).toEqual({
       answer: "José Álvarez has 1 incident.",
       appliedFilters: { assignee: "José Álvarez" },
+      action: null,
     })
   })
 
@@ -427,6 +451,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "Ana-María O'Connor has 1 incident.",
       appliedFilters: { assignee: "Ana-María O'Connor" },
+      action: null,
     })
   })
 
@@ -465,6 +490,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "There are 0 incidents.",
       appliedFilters: null,
+      action: null,
     })
   })
 
@@ -514,6 +540,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer: "Filtered incidents summary.",
       appliedFilters: toolArgs,
+      action: null,
     })
   })
 

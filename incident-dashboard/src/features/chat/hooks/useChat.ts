@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query"
 import { queryChat } from "../services/chat.service"
 import { useChatFilters } from "../context/useChatFilters"
 import type { IncidentFiltersState } from "@/features/incidents/components/IncidentFilters"
+import { useToast } from "@/app/context/useToast"
 
 export type ChatMessage = {
   role: "user" | "assistant"
@@ -12,14 +13,22 @@ export type ChatMessage = {
 export const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const { setChatFilters } = useChatFilters()
+  const { showToast } = useToast()
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: (question: string) => queryChat(question, messages),
     onMutate: (question: string) => {
       setMessages((prev) => [...prev, { role: "user", content: question }])
     },
-    onSuccess: ({ answer, appliedFilters }) => {
+    onSuccess: ({ answer, appliedFilters, action }) => {
       setMessages((prev) => [...prev, { role: "assistant", content: answer }])
+
+      if (action === "created") {
+        showToast("Incident created successfully", "success")
+      } else if (action === "updated") {
+        showToast("Incident updated successfully", "success")
+      }
+
       if (appliedFilters) {
         const filters: IncidentFiltersState = {
           status: (appliedFilters.status as IncidentFiltersState["status"]) ?? "",
