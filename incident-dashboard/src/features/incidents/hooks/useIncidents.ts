@@ -2,10 +2,12 @@ import { getIncidents, deleteIncident, getAssignees } from "../services/incident
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query"
 import type { IncidentFiltersState } from "@/features/incidents/components/IncidentFilters"
 import { useToast } from "@/app/context/useToast"
+import { useAuth } from "@/features/auth/context/AuthContext"
 
 export const useIncidents = (page: number, filters: Partial<IncidentFiltersState> = {}) => {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const { isAuthenticated } = useAuth()
 
   const {
     data: paginatedData,
@@ -14,11 +16,13 @@ export const useIncidents = (page: number, filters: Partial<IncidentFiltersState
   } = useQuery({
     queryKey: ["incidents", page, filters],
     queryFn: () => getIncidents(page, 12, filters),
+    enabled: isAuthenticated,
   })
 
   const { data: assignees = [] } = useQuery({
     queryKey: ["incident-assignees"],
     queryFn: getAssignees,
+    enabled: isAuthenticated,
   })
 
   const { mutate: removeIncident } = useMutation({

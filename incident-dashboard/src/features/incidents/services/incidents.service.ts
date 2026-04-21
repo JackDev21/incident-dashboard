@@ -21,6 +21,14 @@ const readPayload = async <T>(response: Response): Promise<T> => {
 }
 
 const validateHttpResponse = async (response: Response, fallback: string): Promise<void> => {
+  if (response.status === 401) {
+    // Token inválido o expirado - limpiar almacenamiento y redirigir
+    localStorage.removeItem("auth_token")
+    localStorage.removeItem("auth_user")
+    window.location.href = "/login"
+    throw new Error("Session expired. Please login again")
+  }
+
   if (!response.ok) {
     throw new Error(await apiErrorBackend(response, fallback))
   }

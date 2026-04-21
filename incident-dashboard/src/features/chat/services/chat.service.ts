@@ -17,7 +17,7 @@ type ChatApiResponse = {
 
 type HistoryMessage = { role: "user" | "assistant"; content: string }
 
-export type ChatResult = { answer: string; appliedFilters: AppliedFilters; action?: 'created' | 'updated' | null }
+export type ChatResult = { answer: string; appliedFilters: AppliedFilters; action?: "created" | "updated" | null }
 
 export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<ChatResult> => {
   const token = localStorage.getItem("auth_token")
@@ -31,6 +31,14 @@ export const queryChat = async (question: string, history: HistoryMessage[] = []
     headers,
     body: JSON.stringify({ question, history }),
   })
+
+  if (response.status === 401) {
+    // Token inválido o expirado - limpiar almacenamiento y redirigir
+    localStorage.removeItem("auth_token")
+    localStorage.removeItem("auth_user")
+    window.location.href = "/login"
+    throw new Error("Session expired. Please login again")
+  }
 
   const payload = (await response.json()) as ChatApiResponse
 
