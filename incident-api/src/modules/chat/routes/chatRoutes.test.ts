@@ -2,14 +2,16 @@ import express from "express"
 import request from "supertest"
 import * as chatService from "../services/chatService"
 import { chatRoutes } from ".."
-import { createAppError, errorHandler, notFound } from "../../../middleware"
+import { notFound } from "../../../middleware"
+import { createAppError, errorHandler } from "../../../middleware/http/errorHandler"
+
 
 jest.mock("../services/chatService", () => ({
   answerQuestion: jest.fn(),
 }))
 
 // Mock auth middleware
-jest.mock("../../../middleware/auth", () => ({
+jest.mock("../../../middleware/http/auth", () => ({
   authMiddleware: (req: any, res: any, next: any) => {
     req.user = { id: "user-1", email: "test@example.com" }
     next()

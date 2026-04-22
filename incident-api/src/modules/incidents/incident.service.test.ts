@@ -1,4 +1,4 @@
-import { createAppError } from "../../middleware"
+import { createAppError } from "../../middleware/http/errorHandler"
 import { IncidentModel } from "./incident.model"
 import { createIncident, deleteIncident, getAllIncidents, getIncidentById, updateIncident } from "./incident.service"
 

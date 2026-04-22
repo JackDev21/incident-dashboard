@@ -16,7 +16,8 @@ export const validateBody = (schema: z.ZodTypeAny) => (req: Request, _res: Respo
 /**
  * Middleware genérico para validar los parámetros de consulta (query string) usando un esquema de Zod.
  */
-export const validateQuery = <T extends z.ZodTypeAny>(schema: T) =>
+export const validateQuery =
+  <T extends z.ZodTypeAny>(schema: T) =>
   (req: Request, _res: Response, next: NextFunction) => {
     try {
       const parsed = schema.parse(req.query)

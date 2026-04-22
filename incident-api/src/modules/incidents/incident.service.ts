@@ -1,8 +1,9 @@
 import type { Incident, UpdateIncidentInput } from "./incident.types"
 import { incidentRepository } from "./incident.repository"
 import { matchesAssignee } from "./assignee.utils"
-import { createAppError } from "../../middleware"
+
 import { io } from "../../socket"
+import { createAppError } from "../../middleware/http/errorHandler"
 
 type IncidentFilters = {
   status?: string

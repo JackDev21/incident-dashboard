@@ -7,11 +7,12 @@ import {
   deleteIncident,
   getAssignees,
 } from "./incident.controller"
-import { asyncHandler } from "../../middleware/errorHandler"
-import { validateBody, validateQuery } from "../../middleware/validate"
-import { authMiddleware } from "../../middleware/auth"
+
 import { CreateIncidentSchema, UpdateIncidentSchema } from "./dtos/create-incident.dto"
 import { z } from "zod"
+import { authMiddleware } from "../../middleware/http/auth"
+import { asyncHandler } from "../../middleware/http/errorHandler"
+import { validateBody, validateQuery } from "../../middleware/http/validate"
 
 const router = Router()
 

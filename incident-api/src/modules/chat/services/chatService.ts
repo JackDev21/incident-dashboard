@@ -1,4 +1,4 @@
-import { createAppError } from "../../../middleware"
+import { createAppError } from "../../../middleware/http/errorHandler"
 import { IncidentModel, incidentService } from "../../incidents"
 import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../../incidents/assignee.utils"
 import { IncidentPriority, IncidentStatus } from "../../incidents/incident.types"

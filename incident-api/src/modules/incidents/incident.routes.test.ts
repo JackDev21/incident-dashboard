@@ -2,8 +2,8 @@ import express from "express"
 import request from "supertest"
 import incidentRoutes from "./incident.routes"
 import * as incidentService from "./incident.service"
-import { createAppError } from "../../middleware"
-import { errorHandler, notFound } from "../../middleware"
+import { notFound } from "../../middleware"
+import { createAppError, errorHandler } from "../../middleware/http/errorHandler"
 
 jest.mock("./incident.service", () => ({
   createIncident: jest.fn(),
@@ -14,7 +14,7 @@ jest.mock("./incident.service", () => ({
 }))
 
 // Mock auth middleware
-jest.mock("../../middleware/auth", () => ({
+jest.mock("../../middleware/http/auth", () => ({
   authMiddleware: (req: any, res: any, next: any) => {
     req.user = { id: "user-1", email: "test@example.com" }
     next()

@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express"
-import { sendError } from "../utils/responses"
+import { sendError } from "../../utils/responses"
 import { z } from "zod"
 
 export interface AppError extends Error {
