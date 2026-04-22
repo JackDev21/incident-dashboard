@@ -15,6 +15,8 @@ jest.mock("./incident.model", () => {
   IncidentModelMock.findByIdAndUpdate = jest.fn()
   IncidentModelMock.findByIdAndDelete = jest.fn()
   IncidentModelMock.countDocuments = jest.fn()
+  IncidentModelMock.create = jest.fn()
+  IncidentModelMock.distinct = jest.fn()
   return { IncidentModel: IncidentModelMock }
 })
 
@@ -24,6 +26,8 @@ type MockedIncidentModelType = jest.Mock & {
   findByIdAndUpdate: jest.Mock
   findByIdAndDelete: jest.Mock
   countDocuments: jest.Mock
+  create: jest.Mock
+  distinct: jest.Mock
 }
 
 const MockedIncidentModel = IncidentModel as unknown as MockedIncidentModelType
@@ -38,16 +42,19 @@ jest.mock("../../socket", () => ({
 
 describe("incident service", () => {
   beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  afterEach(() => {
     jest.clearAllMocks()
   })
 
   it("gets all incidents sorted by createdAt desc", async () => {
     const incidents = [{ id: "1", title: "API Down" }]
-    const sortMock = jest.fn().mockReturnValue({
-      skip: jest.fn().mockReturnValue({
-        limit: jest.fn().mockResolvedValue(incidents),
-      }),
-    })
+    const populateForLimit = jest.fn().mockResolvedValue(incidents)
+    const limitMock = jest.fn().mockReturnValue({ populate: populateForLimit })
+    const skipMock = jest.fn().mockReturnValue({ limit: limitMock })
+    const sortMock = jest.fn().mockReturnValue({ skip: skipMock })
     const countDocumentsMock = jest.fn().mockResolvedValue(1)
 
     MockedIncidentModel.find.mockReturnValue({ sort: sortMock })
@@ -66,7 +73,8 @@ describe("incident service", () => {
       { id: "1", title: "API Down", assignee: "Laura Martín" },
       { id: "2", title: "Queue delay", assignee: "Laura" },
     ]
-    const sortMock = jest.fn().mockResolvedValue(incidents)
+    const populateMock = jest.fn().mockResolvedValue(incidents)
+    const sortMock = jest.fn().mockReturnValue({ populate: populateMock })
 
     MockedIncidentModel.find.mockReturnValue({ sort: sortMock })
 
@@ -85,7 +93,7 @@ describe("incident service", () => {
 
   it("gets one incident by id", async () => {
     const incident = { id: "incident-1", title: "API Down" }
-    MockedIncidentModel.findById.mockResolvedValue(incident)
+    MockedIncidentModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(incident) })
 
     const result = await getIncidentById("incident-1")
 
@@ -94,7 +102,7 @@ describe("incident service", () => {
   })
 
   it("throws 404 when incident is not found by id", async () => {
-    MockedIncidentModel.findById.mockResolvedValue(null)
+    MockedIncidentModel.findById.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) })
 
     await expect(getIncidentById("missing-id")).rejects.toMatchObject({
       statusCode: 404,
@@ -103,8 +111,12 @@ describe("incident service", () => {
   })
 
   it("creates an incident with default status open", async () => {
-    const saveMock = jest.fn().mockResolvedValue({ id: "incident-1", status: "open" })
-    MockedIncidentModel.mockImplementation(() => ({ save: saveMock }) as never)
+    const incident = {
+      id: "incident-1",
+      status: "open",
+      populate: jest.fn().mockResolvedValue({ id: "incident-1", status: "open" }),
+    }
+    MockedIncidentModel.create.mockResolvedValue(incident)
 
     const result = await createIncident({
       title: "API Down",
@@ -113,20 +125,18 @@ describe("incident service", () => {
       assignee: "Ana",
     })
 
-    expect(MockedIncidentModel).toHaveBeenCalledWith({
+    expect(MockedIncidentModel.create).toHaveBeenCalledWith({
       title: "API Down",
       description: "Main API is not responding",
       status: "open",
       priority: "high",
       assignee: "Ana",
     })
-    expect(saveMock).toHaveBeenCalledTimes(1)
     expect(result).toEqual({ id: "incident-1", status: "open" })
   })
 
   it("throws 400 when create fails with regular error", async () => {
-    const saveMock = jest.fn().mockRejectedValue(new Error("validation failed"))
-    MockedIncidentModel.mockImplementation(() => ({ save: saveMock }) as never)
+    MockedIncidentModel.create.mockImplementationOnce(() => Promise.reject(new Error("validation failed")))
 
     await expect(
       createIncident({
@@ -143,8 +153,7 @@ describe("incident service", () => {
 
   it("rethrows non-Error values during create", async () => {
     const unknownError = { reason: "unknown" }
-    const saveMock = jest.fn().mockRejectedValue(unknownError)
-    MockedIncidentModel.mockImplementation(() => ({ save: saveMock }) as never)
+    MockedIncidentModel.create.mockImplementationOnce(() => Promise.reject(unknownError))
 
     await expect(
       createIncident({
@@ -158,20 +167,20 @@ describe("incident service", () => {
 
   it("updates an incident and returns the updated document", async () => {
     const updatedIncident = { id: "incident-1", status: "resolved" }
-    MockedIncidentModel.findByIdAndUpdate.mockResolvedValue(updatedIncident)
+    MockedIncidentModel.findByIdAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(updatedIncident) })
 
     const result = await updateIncident("incident-1", { status: "resolved" })
 
     expect(MockedIncidentModel.findByIdAndUpdate).toHaveBeenCalledWith(
       "incident-1",
       { status: "resolved" },
-      { returnDocument: "after", runValidators: true },
+      { new: true, runValidators: true },
     )
     expect(result).toEqual(updatedIncident)
   })
 
   it("throws 404 when updating a missing incident", async () => {
-    MockedIncidentModel.findByIdAndUpdate.mockResolvedValue(null)
+    MockedIncidentModel.findByIdAndUpdate.mockReturnValue({ populate: jest.fn().mockResolvedValue(null) })
 
     await expect(updateIncident("missing-id", { status: "resolved" })).rejects.toMatchObject({
       statusCode: 404,
@@ -180,7 +189,9 @@ describe("incident service", () => {
   })
 
   it("throws 400 when update fails with regular error", async () => {
-    MockedIncidentModel.findByIdAndUpdate.mockRejectedValue(new Error("invalid status"))
+    MockedIncidentModel.findByIdAndUpdate.mockImplementationOnce(() => {
+      throw new Error("invalid status")
+    })
 
     await expect(updateIncident("incident-1", { status: "resolved" })).rejects.toMatchObject({
       statusCode: 400,
@@ -189,7 +200,9 @@ describe("incident service", () => {
   })
 
   it("rethrows AppError during update", async () => {
-    MockedIncidentModel.findByIdAndUpdate.mockRejectedValue(createAppError(409, "Conflict"))
+    MockedIncidentModel.findByIdAndUpdate.mockImplementationOnce(() => {
+      throw createAppError(409, "Conflict")
+    })
 
     await expect(updateIncident("incident-1", { status: "resolved" })).rejects.toMatchObject({
       statusCode: 409,
@@ -199,7 +212,9 @@ describe("incident service", () => {
 
   it("rethrows non-Error values during update", async () => {
     const unknownError = { reason: "unknown" }
-    MockedIncidentModel.findByIdAndUpdate.mockRejectedValue(unknownError)
+    MockedIncidentModel.findByIdAndUpdate.mockImplementationOnce(() => {
+      throw unknownError
+    })
 
     await expect(updateIncident("incident-1", { status: "resolved" })).rejects.toBe(unknownError)
   })

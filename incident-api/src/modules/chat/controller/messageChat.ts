@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
-import { sendSuccess } from "../../utils/responses"
-import { createAppError } from "../../middleware"
-import * as chatService from "./chat.service"
+import { sendSuccess } from "../../../utils/responses"
+import { createAppError } from "../../../middleware"
+import { chatService } from ".."
 
 export const messageChat = async (req: Request, res: Response): Promise<void> => {
   const question = String(req.body?.question ?? "").trim()

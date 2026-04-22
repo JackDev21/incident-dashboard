@@ -5,10 +5,10 @@ import cors from "cors"
 import { helmet, globalRateLimiter, chatRateLimiter } from "./middleware/security"
 import { socketConnectionLimiter } from "./middleware/socketSecurity"
 import { io } from "./socket"
-import { connectDB } from "./config/db"
 import { incidentRoutes, chatRoutes, userRoutes } from "./modules"
 import { errorHandler } from "./middleware/errorHandler"
 import { requestLogger, notFound } from "./middleware"
+import { connectDB } from "./config/db/connection"
 
 const app = express()
 app.set("trust proxy", 1)

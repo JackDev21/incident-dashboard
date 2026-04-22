@@ -1,9 +1,10 @@
 import { Router } from "express"
-import { asyncHandler } from "../../middleware"
-import { messageChat } from "./chat.controller"
-import { validateBody } from "../../middleware/validate"
-import { authMiddleware } from "../../middleware/auth"
+
 import { z } from "zod"
+import { authMiddleware } from "../../../middleware/auth"
+import { validateBody } from "../../../middleware/validate"
+import { asyncHandler } from "../../../middleware"
+import { messageChat } from ".."
 
 const router = Router()
 

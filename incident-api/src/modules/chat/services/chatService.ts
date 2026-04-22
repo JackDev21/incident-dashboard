@@ -1,9 +1,8 @@
-import { IncidentModel } from "../incidents/incident.model"
-import { createIncident, updateIncident } from "../incidents/incident.service"
-import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../incidents/assignee.utils"
-import { createAppError } from "../../middleware"
-import { SYSTEM_PROMPT } from "./prompt"
-import { IncidentPriority, IncidentStatus } from "../incidents/incident.types"
+import { createAppError } from "../../../middleware"
+import { IncidentModel, incidentService } from "../../incidents"
+import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../../incidents/assignee.utils"
+import { IncidentPriority, IncidentStatus } from "../../incidents/incident.types"
+import { SYSTEM_PROMPT } from "../utils/prompt"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -288,7 +287,7 @@ const executeCreateIncidentTool = async (
   creatorId?: string,
 ): Promise<{ content: string }> => {
   try {
-    const incident = await createIncident({ ...args, creatorId })
+    const incident = await incidentService.createIncident({ ...args, creatorId }, undefined)
     return {
       content: JSON.stringify({
         success: true,
@@ -315,7 +314,7 @@ const executeUpdateIncidentTool = async (args: {
   assignee?: string
 }): Promise<{ content: string }> => {
   try {
-    const incident = await updateIncident(args.id, {
+    const incident = await incidentService.updateIncident(args.id, {
       title: args.title,
       description: args.description,
       status: args.status,
@@ -341,8 +340,7 @@ const executeUpdateIncidentTool = async (args: {
 
 const executeDeleteIncidentTool = async (args: { id: string }): Promise<{ content: string }> => {
   try {
-    const { deleteIncident } = await import("../incidents/incident.service")
-    await deleteIncident(args.id)
+    await incidentService.deleteIncident(args.id)
     return {
       content: JSON.stringify({
         success: true,

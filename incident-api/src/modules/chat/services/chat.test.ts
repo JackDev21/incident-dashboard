@@ -1,19 +1,13 @@
-import { IncidentModel } from "../incidents/incident.model"
-import { answerQuestion } from "./chat.service"
-import { updateIncident } from "../incidents/incident.service"
+import { IncidentModel } from "../../incidents"
+import { answerQuestion } from "./chatService"
 
-jest.mock("../incidents/incident.model", () => {
+jest.mock("../../incidents", () => {
   const IncidentModelMock = {
     find: jest.fn(),
   }
 
   return { IncidentModel: IncidentModelMock }
 })
-
-jest.mock("../incidents/incident.service", () => ({
-  ...jest.requireActual("../incidents/incident.service"),
-  updateIncident: jest.fn(),
-}))
 
 type MockedIncidentModelType = {
   find: jest.Mock
