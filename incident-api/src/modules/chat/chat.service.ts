@@ -31,11 +31,12 @@ type IncidentFilters = {
   status?: "open" | "in progress" | "resolved"
   priority?: "low" | "medium" | "high"
   assignee?: string
+  title?: string
   fromDate?: string
   toDate?: string
 }
 
-type ChatAction = "created" | "updated" | null
+type ChatAction = "created" | "updated" | "deleted" | null
 
 // ─── Tool definition ─────────────────────────────────────────────────────────
 
@@ -43,10 +44,15 @@ const QUERY_INCIDENTS_TOOL = {
   type: "function",
   function: {
     name: "query_incidents",
-    description: "Query incidents from the database with optional filters. Call this before answering.",
+    description:
+      "Query incidents from the database with optional filters. Call this before answering or before deleting/updating an incident to find the correct ID.",
     parameters: {
       type: "object",
       properties: {
+        title: {
+          type: "string",
+          description: "Filter by incident title (partial match allowed)",
+        },
         status: {
           type: "string",
           enum: ["open", "in progress", "resolved"],
@@ -147,6 +153,25 @@ const UPDATE_INCIDENT_TOOL = {
   },
 }
 
+const DELETE_INCIDENT_TOOL = {
+  type: "function",
+  function: {
+    name: "delete_incident",
+    description:
+      "Permanently delete an incident from the database. Use this when the user explicitly asks to remove or delete a specific incident.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "The unique ID of the incident to delete",
+        },
+      },
+      required: ["id"],
+    },
+  },
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 type IncidentQueryResult = {
@@ -191,6 +216,9 @@ const fetchLLM = async (body: Record<string, unknown>, apiKey: string, llmBaseUr
 const buildMongoFilter = (filters: IncidentFilters): Record<string, unknown> => {
   const mongoFilter: Record<string, unknown> = {}
 
+  if (filters.title) {
+    mongoFilter.title = { $regex: filters.title, $options: "i" }
+  }
   if (filters.status) mongoFilter.status = filters.status
   if (filters.priority) mongoFilter.priority = filters.priority
 
@@ -311,6 +339,26 @@ const executeUpdateIncidentTool = async (args: {
   }
 }
 
+const executeDeleteIncidentTool = async (args: { id: string }): Promise<{ content: string }> => {
+  try {
+    const { deleteIncident } = await import("../incidents/incident.service")
+    await deleteIncident(args.id)
+    return {
+      content: JSON.stringify({
+        success: true,
+        message: `Incident ${args.id} deleted successfully`,
+      }),
+    }
+  } catch (error: any) {
+    return {
+      content: JSON.stringify({
+        success: false,
+        message: error.message || "Failed to delete incident",
+      }),
+    }
+  }
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export const answerQuestion = async (
@@ -338,7 +386,7 @@ export const answerQuestion = async (
       model,
       temperature: 0.1,
       messages,
-      tools: [QUERY_INCIDENTS_TOOL, CREATE_INCIDENT_TOOL, UPDATE_INCIDENT_TOOL],
+      tools: [QUERY_INCIDENTS_TOOL, CREATE_INCIDENT_TOOL, UPDATE_INCIDENT_TOOL, DELETE_INCIDENT_TOOL],
       tool_choice: "auto",
     },
     apiKey,
@@ -365,6 +413,9 @@ export const answerQuestion = async (
   } else if (toolCall.function.name === "update_incident") {
     toolResult = await executeUpdateIncidentTool(toolArgs)
     action = "updated"
+  } else if (toolCall.function.name === "delete_incident") {
+    toolResult = await executeDeleteIncidentTool(toolArgs)
+    action = "deleted"
   } else {
     throw createAppError(500, `Unknown tool called: ${toolCall.function.name}`)
   }
