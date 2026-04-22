@@ -24,7 +24,8 @@ export const incidentRepository = {
   },
 
   create: async (data: any) => {
-    return await IncidentModel.create(data)
+    const doc = await IncidentModel.create(data)
+    return await doc.populate("creatorId", "name")
   },
 
   update: async (id: string, data: Partial<Incident>) => {
