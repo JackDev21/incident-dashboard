@@ -111,13 +111,21 @@ const UPDATE_INCIDENT_TOOL = {
   function: {
     name: "update_incident",
     description:
-      "Update an existing incident in the database. Use this to change the status, priority, or assignee of an incident.",
+      "Update an existing incident in the database. Use this to change the title, description, status, priority, or assignee of an incident.",
     parameters: {
       type: "object",
       properties: {
         id: {
           type: "string",
           description: "The unique ID of the incident to update",
+        },
+        title: {
+          type: "string",
+          description: "New title for the incident",
+        },
+        description: {
+          type: "string",
+          description: "New description for the incident",
         },
         status: {
           type: "string",
@@ -217,20 +225,26 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
   )
 
   if (filteredIncidents.length === 0) {
-    return { content: JSON.stringify({ total: 0, returned: 0, incidents: [] }), resolvedAssignee, matchingAssignees }
+    return {
+      content: "No incidents found matching the criteria.",
+      resolvedAssignee,
+      matchingAssignees,
+    }
   }
 
-  const data = filteredIncidents.map((i) => ({
-    id: String(i._id),
-    title: i.title,
-    status: i.status,
-    priority: i.priority,
-    assignee: i.assignee,
-    createdAt: i.createdAt,
-  }))
+  const formattedIncidents = filteredIncidents
+    .map((i) => {
+      const id = String(i._id)
+      const createdDate = new Date(i.createdAt).toISOString().split("T")[0]
+      // Format: [#Title](/incidents/{id}) | Estado: status | Prioridad: priority | Asignada a: assignee | Creación: date
+      return `[#${i.title}](/incidents/${id}) | Estado: ${i.status} | Prioridad: ${i.priority} | Asignada a: ${i.assignee} | Creación: ${createdDate}`
+    })
+    .join("\n")
+
+  const summaryContent = `Found ${filteredIncidents.length} incident(s):\n\n${formattedIncidents}`
 
   return {
-    content: JSON.stringify({ total: allFiltered.length, returned: filteredIncidents.length, incidents: data }),
+    content: summaryContent,
     resolvedAssignee,
     matchingAssignees,
   }
@@ -266,12 +280,16 @@ const executeCreateIncidentTool = async (
 
 const executeUpdateIncidentTool = async (args: {
   id: string
+  title?: string
+  description?: string
   status?: IncidentStatus
   priority?: IncidentPriority
   assignee?: string
 }): Promise<{ content: string }> => {
   try {
     const incident = await updateIncident(args.id, {
+      title: args.title,
+      description: args.description,
       status: args.status,
       priority: args.priority,
       assignee: args.assignee,
