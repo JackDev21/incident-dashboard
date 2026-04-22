@@ -56,16 +56,11 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
     ? new Date(incident.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : "Unknown date"
 
-  // Log the incident title on each render
-  console.log("Incident rendered:", incident.title)
-
   const isResolved = incident.status === "resolved"
 
   // Extract creator name if it was populated
   const creatorName =
-    typeof incident.creatorId === "object" && incident.creatorId?.name
-      ? incident.creatorId.name
-      : null
+    typeof incident.creatorId === "object" && incident.creatorId?.name ? incident.creatorId.name : null
 
   return (
     <Card className={["card", isResolved ? styles.resolved : ""].join(" ").trim()}>
@@ -98,7 +93,7 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
           </span>
           <span>{incident.assignee}</span>
         </span>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span className={styles.date}>{formattedDate}</span>
           {creatorName && <span className={styles.reporter}>Ref: {creatorName}</span>}
         </div>
