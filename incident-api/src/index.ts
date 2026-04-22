@@ -2,13 +2,14 @@ import "dotenv/config"
 import { createServer } from "http"
 import express from "express"
 import cors from "cors"
-import { helmet, globalRateLimiter, chatRateLimiter } from "./middleware/security"
-import { socketConnectionLimiter } from "./middleware/socketSecurity"
 import { io } from "./socket"
 import { incidentRoutes, chatRoutes, userRoutes } from "./modules"
-import { errorHandler } from "./middleware/errorHandler"
 import { requestLogger, notFound } from "./middleware"
 import { connectDB } from "./config/db/connection"
+import helmet from "helmet"
+import { chatRateLimiter, globalRateLimiter } from "./middleware/http/security"
+import { errorHandler } from "./middleware/http/errorHandler"
+import { socketConnectionLimiter } from "./middleware/socket/socketSecurity"
 
 const app = express()
 app.set("trust proxy", 1)
