@@ -336,7 +336,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer:
         "He encontrado varias personas que coinciden con ese nombre:\n\n- Carlos\n- Carlos Ruiz\n\n¿A cuál de ellas te refieres?",
-      appliedFilters: { assignee: "Carlos" },
+      appliedFilters: null,
       action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(2)

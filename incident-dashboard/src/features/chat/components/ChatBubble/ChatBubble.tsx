@@ -10,9 +10,10 @@ import styles from "./ChatBubble.module.scss"
 type ChatMessageProps = {
   role: ChatMessageType["role"]
   children: React.ReactNode
+  onSelect?: (text: string) => void
 }
 
-const ChatMessage = ({ role, children }: ChatMessageProps) => (
+const ChatMessage = ({ role, children, onSelect }: ChatMessageProps) => (
   <div className={`${styles.message} ${styles[role]}`}>
     <span className={styles.avatar}>{role === "user" ? <User size={14} /> : <Bot size={14} />}</span>
     <div className={styles.content}>
@@ -28,6 +29,32 @@ const ChatMessage = ({ role, children }: ChatMessageProps) => (
                   {children}
                 </a>
               )
+            },
+            // Render lists and items: make candidate lists look like full-width buttons
+            ul: (props: any) => <ul className={styles.candidateList} {...props} />,
+            li: (props: any) => {
+              const { children } = props
+
+              const flattenText = (node: React.ReactNode): string => {
+                if (typeof node === "string") return node
+                if (Array.isArray(node)) return node.map(flattenText).join("")
+                if (typeof node === "object" && node !== null && "props" in node) return flattenText((node as any).props.children)
+                return ""
+              }
+
+              const text = flattenText(children).trim()
+
+              if (role === "assistant" && onSelect && text) {
+                return (
+                  <li className={styles.candidateItem} {...props}>
+                    <Button variant="ghost" type="button" onClick={() => onSelect(text)} className={styles.candidateBtn}>
+                      <div className={styles.candidateText}>{children}</div>
+                    </Button>
+                  </li>
+                )
+              }
+
+              return <li {...props}>{children}</li>
             },
           }}
         >
@@ -55,9 +82,9 @@ export const ChatBubble = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const question = input.trim()
-    if (!question || isPending) return
-    setInput("")
-    sendMessage(question)
+      if (!question || isPending) return
+      setInput("")
+      sendMessage({ question })
   }
 
   return createPortal(
@@ -92,11 +119,15 @@ export const ChatBubble = () => {
             {messages.length === 0 && (
               <p className={styles.empty}>Ask me about your incidents — status, assignees, priorities…</p>
             )}
-            {messages.map((msg, i) => (
-              <ChatMessage key={i} role={msg.role}>
-                {msg.content}
-              </ChatMessage>
-            ))}
+              {messages.map((msg, i) => (
+                <ChatMessage
+                  key={i}
+                  role={msg.role}
+                  onSelect={(text) => !isPending && sendMessage({ question: text, selection: { field: "assignee", value: text } })}
+                >
+                  {msg.content}
+                </ChatMessage>
+              ))}
             {isPending && (
               <ChatMessage role="assistant">
                 <span className={styles.typing}>

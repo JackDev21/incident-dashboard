@@ -6,10 +6,18 @@ export const normalizeAssigneeText = (value: string): string =>
     .replace(/[^\p{L}\p{N}]+/gu, "")
     .trim()
 
+// Partial match — used in chatService for broad candidate search
 export const matchesAssignee = (incidentAssignee: string, requestedAssignee?: string): boolean => {
   if (!requestedAssignee) return true
 
   return normalizeAssigneeText(incidentAssignee).includes(normalizeAssigneeText(requestedAssignee))
+}
+
+// Exact match — used in incident.service for dashboard filtering
+export const exactMatchesAssignee = (incidentAssignee: string, requestedAssignee?: string): boolean => {
+  if (!requestedAssignee) return true
+
+  return normalizeAssigneeText(incidentAssignee) === normalizeAssigneeText(requestedAssignee)
 }
 
 export const getDistinctMatchingAssignees = (assignees: string[], requestedAssignee?: string): string[] => {
@@ -23,5 +31,7 @@ export const resolveCanonicalAssignee = (assignees: string[], requestedAssignee?
 
   const distinctMatches = getDistinctMatchingAssignees(assignees, requestedAssignee)
 
-  return distinctMatches.length === 1 ? distinctMatches[0] : requestedAssignee
+  // Return the canonical name only when there is exactly one match (unambiguous).
+  // Return undefined when there are 0 or >1 matches so the caller knows the query is ambiguous.
+  return distinctMatches.length === 1 ? distinctMatches[0] : undefined
 }

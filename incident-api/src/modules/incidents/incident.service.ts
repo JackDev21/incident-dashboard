@@ -1,6 +1,6 @@
 import type { Incident, UpdateIncidentInput } from "./incident.types"
 import { incidentRepository } from "./incident.repository"
-import { matchesAssignee } from "./assignee.utils"
+import { matchesAssignee, exactMatchesAssignee } from "./assignee.utils"
 
 import { io } from "../../socket"
 import { createAppError } from "../../middleware/http/errorHandler"
@@ -22,7 +22,9 @@ export const getAllIncidents = async (
 
   if (filters.assignee) {
     const matchingIncidents = (await incidentRepository.findAll(query)) as Incident[]
-    const filteredData = matchingIncidents.filter((incident) => matchesAssignee(incident.assignee, filters.assignee))
+    const filteredData = matchingIncidents.filter((incident) =>
+      exactMatchesAssignee(incident.assignee, filters.assignee)
+    )
 
     const skip = (page - 1) * limit
     const paginatedData = filteredData.slice(skip, skip + limit)

@@ -16,9 +16,10 @@ export const useChat = () => {
   const { showToast } = useToast()
 
   const { mutate: sendMessage, isPending } = useMutation({
-    mutationFn: (question: string) => queryChat(question, messages),
-    onMutate: (question: string) => {
-      setMessages((prev) => [...prev, { role: "user", content: question }])
+    mutationFn: (opts: { question: string; selection?: { field: string; value: string } }) =>
+      queryChat(opts.question, messages, opts.selection),
+    onMutate: (opts: { question: string }) => {
+      setMessages((prev) => [...prev, { role: "user", content: opts.question }])
     },
     onSuccess: ({ answer, appliedFilters, action }) => {
       setMessages((prev) => [...prev, { role: "assistant", content: answer }])

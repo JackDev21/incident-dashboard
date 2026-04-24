@@ -1,6 +1,12 @@
 import { createAppError } from "../../../middleware/http/errorHandler"
 import { IncidentModel, incidentService } from "../../incidents"
-import { getDistinctMatchingAssignees, matchesAssignee, resolveCanonicalAssignee } from "../../incidents/assignee.utils"
+import {
+  getDistinctMatchingAssignees,
+  matchesAssignee,
+  resolveCanonicalAssignee,
+  exactMatchesAssignee,
+  normalizeAssigneeText,
+} from "../../incidents/assignee.utils"
 import { IncidentPriority, IncidentStatus } from "../../incidents/incident.types"
 import { SYSTEM_PROMPT } from "../utils/prompt"
 
@@ -239,17 +245,29 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
     toDate: args.toDate,
   })
   const incidents = (await IncidentModel.find(mongoFilter).sort({ createdAt: -1 }).lean()) as IncidentQueryResult[]
-  const allFiltered = incidents.filter((incident) => matchesAssignee(incident.assignee, args.assignee))
+  const useExact = (args as any).__exactAssigneeSelection === true
+
+  const allFiltered = incidents.filter((incident) =>
+    useExact ? exactMatchesAssignee(incident.assignee, args.assignee) : matchesAssignee(incident.assignee, args.assignee),
+  )
   const filteredIncidents = allFiltered.slice(0, 100)
 
-  const matchingAssignees = getDistinctMatchingAssignees(
-    filteredIncidents.map((incident) => incident.assignee),
-    args.assignee,
-  )
-  const resolvedAssignee = resolveCanonicalAssignee(
-    filteredIncidents.map((incident) => incident.assignee),
-    args.assignee,
-  )
+  let matchingAssignees: string[]
+  let resolvedAssignee: string | undefined
+
+  if (useExact) {
+    matchingAssignees = Array.from(new Set(filteredIncidents.map((incident) => incident.assignee)))
+    resolvedAssignee = matchingAssignees.length === 1 ? matchingAssignees[0] : undefined
+  } else {
+    matchingAssignees = getDistinctMatchingAssignees(
+      filteredIncidents.map((incident) => incident.assignee),
+      args.assignee,
+    )
+    resolvedAssignee = resolveCanonicalAssignee(
+      filteredIncidents.map((incident) => incident.assignee),
+      args.assignee,
+    )
+  }
 
   if (filteredIncidents.length === 0) {
     return {
@@ -268,7 +286,13 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
     })
     .join("\n")
 
-  const summaryContent = `Found ${filteredIncidents.length} incident(s):\n\n${formattedIncidents}`
+
+  const ambiguityPrefix =
+    matchingAssignees.length > 1
+      ? `AMBIGUOUS_ASSIGNEE: The search matched ${matchingAssignees.length} distinct people: ${matchingAssignees.map((n) => `"${n}"`).join(", ")}. Do NOT show the results below. Ask the user which specific person they mean and list only those names.\n\n`
+      : ""
+
+  const summaryContent = `${ambiguityPrefix}Found ${filteredIncidents.length} incident(s):\n\n${formattedIncidents}`
 
   return {
     content: summaryContent,
@@ -276,6 +300,7 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
     matchingAssignees,
   }
 }
+
 
 const executeCreateIncidentTool = async (
   args: {
@@ -363,6 +388,7 @@ export const answerQuestion = async (
   question: string,
   history: Array<{ role: "user" | "assistant"; content: string }> = [],
   creatorId?: string,
+  selection?: { field: string; value: string },
 ): Promise<{ answer: string; appliedFilters: IncidentFilters | null; action: ChatAction }> => {
   const apiKey = process.env.LLM_API_KEY
   const model = process.env.LLM_MODEL || "mistral-small-latest"
@@ -399,7 +425,16 @@ export const answerQuestion = async (
   }
 
   // Execute the tool on our backend
-  const toolArgs = JSON.parse(toolCall.function.arguments)
+  let toolArgs: any = JSON.parse(toolCall.function.arguments)
+  if (selection && toolCall.function.name === "query_incidents") {
+    try {
+      if (selection.field === "assignee" && typeof selection.value === "string" && selection.value.trim()) {
+        toolArgs = { ...toolArgs, assignee: String(selection.value).trim(), __exactAssigneeSelection: true }
+      }
+    } catch (err) {
+      // ignore malformed selection
+    }
+  }
   let toolResult: { content: string; resolvedAssignee?: string; matchingAssignees?: string[] }
   let action: ChatAction = null
 
@@ -438,8 +473,16 @@ export const answerQuestion = async (
     throw createAppError(502, "LLM returned an empty response")
   }
 
+  // Do not apply filters to the dashboard when the assignee is ambiguous
+  // (multiple candidates found). In that case the LLM should ask the user to clarify,
+  // and we must not pre-filter the dashboard until the user picks one.
+  const isAmbiguous =
+    toolCall.function.name === "query_incidents" &&
+    toolArgs.assignee &&
+    (toolResult.matchingAssignees?.length ?? 0) > 1
+
   const appliedFilters =
-    toolCall.function.name === "query_incidents" && Object.keys(toolArgs).length > 0
+    toolCall.function.name === "query_incidents" && Object.keys(toolArgs).length > 0 && !isAmbiguous
       ? {
           ...toolArgs,
           ...(toolResult.resolvedAssignee ? { assignee: toolResult.resolvedAssignee } : {}),

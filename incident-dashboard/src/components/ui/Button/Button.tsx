@@ -5,6 +5,7 @@ type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "icon"
 type ButtonProps = {
   label?: string
   icon?: React.ReactNode
+  children?: React.ReactNode
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   disabled?: boolean
   className?: string
@@ -16,6 +17,7 @@ type ButtonProps = {
 export const Button = ({
   label,
   icon,
+  children,
   onClick,
   disabled = false,
   className = "",
@@ -32,7 +34,8 @@ export const Button = ({
       title={title}
     >
       {icon && <span className={styles.icon}>{icon}</span>}
-      {label && <span>{label}</span>}
+      {/* Prefer explicit label prop for accessibility, fallback to children when label not provided */}
+      {label ? <span>{label}</span> : children}
     </button>
   )
 }

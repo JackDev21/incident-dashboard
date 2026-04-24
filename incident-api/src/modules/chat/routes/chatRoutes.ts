@@ -19,6 +19,12 @@ const chatSchema = z.object({
       }),
     )
     .optional(),
+  selection: z
+    .object({
+      field: z.string(),
+      value: z.string(),
+    })
+    .optional(),
 })
 
 // Protect chat routes

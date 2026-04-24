@@ -19,7 +19,11 @@ type HistoryMessage = { role: "user" | "assistant"; content: string }
 
 export type ChatResult = { answer: string; appliedFilters: AppliedFilters; action?: "created" | "updated" | null }
 
-export const queryChat = async (question: string, history: HistoryMessage[] = []): Promise<ChatResult> => {
+export const queryChat = async (
+  question: string,
+  history: HistoryMessage[] = [],
+  selection?: { field: string; value: string },
+): Promise<ChatResult> => {
   const token = localStorage.getItem("auth_token")
   const headers: Record<string, string> = { "Content-Type": "application/json" }
   if (token && token !== "undefined" && token !== "null") {
@@ -29,7 +33,7 @@ export const queryChat = async (question: string, history: HistoryMessage[] = []
   const response = await fetch(`${BASE_URL}/query`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ question, history }),
+    body: JSON.stringify({ question, history, selection }),
   })
 
   if (response.status === 401) {

@@ -169,6 +169,52 @@
   p {
     margin: 0;
   }
+
+  /* Candidate list styles to make selections look like buttons */
+  .candidateList {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+    display: block;
+  }
+
+  .candidateItem {
+    margin: 2px 0;
+  }
+
+  .candidateBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+  }
+
+  .candidateBtn:hover {
+    background: rgba(84, 130, 228, 0.06);
+    border-color: var(--border-color);
+  }
+
+  .candidateText {
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  /* Ensure Button default padding is overridden inside candidate items */
+  .candidateItem button {
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+  }
 }
 
 // ─── Typing indicator ─────────────────────────────────────────────────────────
