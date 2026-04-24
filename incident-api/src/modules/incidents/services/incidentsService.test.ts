@@ -1,8 +1,9 @@
-import { createAppError } from "../../middleware/http/errorHandler"
-import { IncidentModel } from "./incident.model"
-import { createIncident, deleteIncident, getAllIncidents, getIncidentById, updateIncident } from "./incident.service"
+import { createAppError } from "../../../middleware/http/errorHandler"
+import { IncidentModel } from "../models/incidentModel"
 
-jest.mock("./incident.model", () => {
+import { createIncident, deleteIncident, getAllIncidents, getIncidentById, updateIncident } from "./incidentsService"
+
+jest.mock("../models/incidentModel", () => {
   const IncidentModelMock: any = jest.fn()
   IncidentModelMock.find = jest.fn().mockReturnValue({
     sort: jest.fn().mockReturnValue({
@@ -32,7 +33,7 @@ type MockedIncidentModelType = jest.Mock & {
 
 const MockedIncidentModel = IncidentModel as unknown as MockedIncidentModelType
 
-jest.mock("../../socket", () => ({
+jest.mock("../../../socket", () => ({
   io: {
     engine: { clientsCount: 1 },
     emit: jest.fn(),

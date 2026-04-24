@@ -1,9 +1,8 @@
-import type { Incident, UpdateIncidentInput } from "./incident.types"
-import { incidentRepository } from "./incident.repository"
-import { matchesAssignee, exactMatchesAssignee } from "./assignee.utils"
-
-import { io } from "../../socket"
-import { createAppError } from "../../middleware/http/errorHandler"
+import type { Incident, UpdateIncidentInput } from "../types/incidentTypes"
+import { incidentRepository } from "../repositories/mongoRepository"
+import { exactMatchesAssignee } from "../utils/assignee"
+import { createAppError } from "../../../middleware/http/errorHandler"
+import { io } from "../../../socket"
 
 type IncidentFilters = {
   status?: string
@@ -23,7 +22,7 @@ export const getAllIncidents = async (
   if (filters.assignee) {
     const matchingIncidents = (await incidentRepository.findAll(query)) as Incident[]
     const filteredData = matchingIncidents.filter((incident) =>
-      exactMatchesAssignee(incident.assignee, filters.assignee)
+      exactMatchesAssignee(incident.assignee, filters.assignee),
     )
 
     const skip = (page - 1) * limit

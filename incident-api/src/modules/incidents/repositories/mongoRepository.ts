@@ -1,6 +1,6 @@
-import { IncidentModel } from "./incident.model"
 import { QueryFilter } from "mongoose"
-import { Incident } from "./incident.types"
+import { Incident } from "../types/incidentTypes"
+import { IncidentModel } from "../models/incidentModel"
 
 export const incidentRepository = {
   findAll: async (filters: QueryFilter<Incident>) => {

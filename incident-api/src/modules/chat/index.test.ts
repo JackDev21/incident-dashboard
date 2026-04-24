@@ -1,7 +1,7 @@
 import { IncidentModel } from "../incidents"
 import { answerQuestion } from "./services/chatService"
 
-jest.mock("../incidents/incident.model", () => {
+jest.mock("../incidents/models/incidentModel", () => {
   const IncidentModelMock = {
     find: jest.fn(),
   }
@@ -9,8 +9,8 @@ jest.mock("../incidents/incident.model", () => {
   return { IncidentModel: IncidentModelMock }
 })
 
-jest.mock("../incidents/incident.service", () => ({
-  ...jest.requireActual("../incidents/incident.service"),
+jest.mock("../incidents/services/incidentsService", () => ({
+  ...jest.requireActual("../incidents/services/incidentsService"),
   updateIncident: jest.fn(),
 }))
 
@@ -341,7 +341,7 @@ describe("chat service", () => {
     expect(result).toEqual({
       answer:
         "He encontrado varias personas que coinciden con ese nombre:\n\n- Carlos\n- Carlos Ruiz\n\n¿A cuál de ellas te refieres?",
-      appliedFilters: { assignee: "Carlos" },
+      appliedFilters: null,
       action: null,
     })
     expect(fetchMock).toHaveBeenCalledTimes(2)

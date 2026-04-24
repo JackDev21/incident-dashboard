@@ -1,6 +1,6 @@
 import type { Request, Response } from "express"
-import * as incidentService from "./incident.service"
-import { sendSuccess } from "../../utils/responses"
+import * as incidentService from "../services/incidentsService"
+import { sendSuccess } from "../../../utils/responses"
 
 export const getIncidents = async (req: Request, res: Response): Promise<void> => {
   const page = Number(req.query.page) || 1

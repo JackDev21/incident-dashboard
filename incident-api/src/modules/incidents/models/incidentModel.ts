@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose"
-import type { Incident } from "./incident.types"
+import type { Incident } from "../types/incidentTypes"
 
 const incidentSchema = new Schema<Incident>(
   {

@@ -6,8 +6,8 @@ import {
   resolveCanonicalAssignee,
   exactMatchesAssignee,
   normalizeAssigneeText,
-} from "../../incidents/assignee.utils"
-import { IncidentPriority, IncidentStatus } from "../../incidents/incident.types"
+} from "../../incidents/utils/assignee"
+import { IncidentPriority, IncidentStatus } from "../../incidents/types/incidentTypes"
 import { SYSTEM_PROMPT } from "../utils/prompt"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -248,7 +248,9 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
   const useExact = (args as any).__exactAssigneeSelection === true
 
   const allFiltered = incidents.filter((incident) =>
-    useExact ? exactMatchesAssignee(incident.assignee, args.assignee) : matchesAssignee(incident.assignee, args.assignee),
+    useExact
+      ? exactMatchesAssignee(incident.assignee, args.assignee)
+      : matchesAssignee(incident.assignee, args.assignee),
   )
   const filteredIncidents = allFiltered.slice(0, 100)
 
@@ -286,7 +288,6 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
     })
     .join("\n")
 
-
   const ambiguityPrefix =
     matchingAssignees.length > 1
       ? `AMBIGUOUS_ASSIGNEE: The search matched ${matchingAssignees.length} distinct people: ${matchingAssignees.map((n) => `"${n}"`).join(", ")}. Do NOT show the results below. Ask the user which specific person they mean and list only those names.\n\n`
@@ -300,7 +301,6 @@ const executeQueryIncidentsTool = async (args: IncidentFilters): Promise<QueryIn
     matchingAssignees,
   }
 }
-
 
 const executeCreateIncidentTool = async (
   args: {
@@ -477,9 +477,7 @@ export const answerQuestion = async (
   // (multiple candidates found). In that case the LLM should ask the user to clarify,
   // and we must not pre-filter the dashboard until the user picks one.
   const isAmbiguous =
-    toolCall.function.name === "query_incidents" &&
-    toolArgs.assignee &&
-    (toolResult.matchingAssignees?.length ?? 0) > 1
+    toolCall.function.name === "query_incidents" && toolArgs.assignee && (toolResult.matchingAssignees?.length ?? 0) > 1
 
   const appliedFilters =
     toolCall.function.name === "query_incidents" && Object.keys(toolArgs).length > 0 && !isAmbiguous

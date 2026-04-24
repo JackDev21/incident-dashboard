@@ -1,4 +1,5 @@
-import { IncidentModel } from "./incident.model"
+import { IncidentModel } from "./incidentModel"
+
 
 describe("incident model schema", () => {
   it("applies defaults and JSON transform", () => {

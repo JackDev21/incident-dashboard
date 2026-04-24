@@ -6,13 +6,13 @@ import {
   updateIncident,
   deleteIncident,
   getAssignees,
-} from "./incident.controller"
+} from "../controllers/incidentsController"
 
-import { CreateIncidentSchema, UpdateIncidentSchema } from "./dtos/create-incident.dto"
+import { CreateIncidentSchema, UpdateIncidentSchema } from "../dtos/create-incident.dto"
 import { z } from "zod"
-import { authMiddleware } from "../../middleware/http/auth"
-import { asyncHandler } from "../../middleware/http/errorHandler"
-import { validateBody, validateQuery } from "../../middleware/http/validate"
+import { authMiddleware } from "../../../middleware/http/auth"
+import { asyncHandler } from "../../../middleware/http/errorHandler"
+import { validateBody, validateQuery } from "../../../middleware/http/validate"
 
 const router = Router()
 
