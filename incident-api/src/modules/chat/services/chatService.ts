@@ -389,6 +389,7 @@ export const answerQuestion = async (
   history: Array<{ role: "user" | "assistant"; content: string }> = [],
   creatorId?: string,
   selection?: { field: string; value: string },
+  previousFilters?: IncidentFilters | null,
 ): Promise<{ answer: string; appliedFilters: IncidentFilters | null; action: ChatAction }> => {
   const apiKey = process.env.LLM_API_KEY
   const model = process.env.LLM_MODEL || "mistral-small-latest"
@@ -426,6 +427,55 @@ export const answerQuestion = async (
 
   // Execute the tool on our backend
   let toolArgs: any = JSON.parse(toolCall.function.arguments)
+
+  // Merge previous chat filters into the tool args for follow-up queries so the
+  // conversation maintains context (e.g., user first requested status=open+priority=low,
+  // then "solo muestre las de Elena" should keep the previous filters).
+  if (toolCall.function.name === "query_incidents" && previousFilters) {
+    try {
+      toolArgs = {
+        ...(previousFilters.status ? { status: previousFilters.status } : {}),
+        ...(previousFilters.priority ? { priority: previousFilters.priority } : {}),
+        ...(previousFilters.assignee ? { assignee: previousFilters.assignee } : {}),
+        ...(previousFilters.fromDate ? { fromDate: previousFilters.fromDate } : {}),
+        ...(previousFilters.toDate ? { toDate: previousFilters.toDate } : {}),
+        ...toolArgs,
+      }
+    } catch (err) {
+      // ignore merge errors
+    }
+  }
+  // If the LLM provided a `title` but no `assignee`, and that title text matches one or more
+  // known assignees, ask the user to clarify instead of guessing whether they meant a title
+  // search or an assignee filter.
+  if (toolCall.function.name === "query_incidents" && !toolArgs.assignee && toolArgs.title) {
+    try {
+      const candidates = await incidentService.getUniqueAssignees()
+      const matches = getDistinctMatchingAssignees(candidates, String(toolArgs.title))
+      if (matches.length > 0) {
+        // Let the LLM generate a natural clarification question instead of a deterministic string.
+        const matchListText = matches.map((n) => `"${n}"`).join(", ")
+        const userClarifyPrompt = `The text \"${toolArgs.title}\" might refer to an incident title or to the name of an assignee (${matchListText}). Ask ONE short clarification question to the user, preferably in the user's language, asking whether they want to search by title (reply \"title\") or by assignee (reply \"assignee: <name>\"). Do NOT call any tools or include extra information.`
+
+        const clarifyResp = await fetchLLM(
+          {
+            model,
+            temperature: 0.0,
+            messages: [...messages, { role: "user", content: userClarifyPrompt }],
+          },
+          apiKey,
+          llmBaseUrl,
+        )
+
+        const clarification = clarifyResp.choices?.[0]?.message?.content?.trim() ??
+          `Do you want to search by title \"${toolArgs.title}\" or by assignee ${matchListText}? Reply with \"title\" or \"assignee: <name>\".`
+
+        return { answer: clarification, appliedFilters: null, action: null }
+      }
+    } catch (err) {
+      // ignore errors and continue
+    }
+  }
   if (selection && toolCall.function.name === "query_incidents") {
     try {
       if (selection.field === "assignee" && typeof selection.value === "string" && selection.value.trim()) {
@@ -452,6 +502,8 @@ export const answerQuestion = async (
   } else {
     throw createAppError(500, `Unknown tool called: ${toolCall.function.name}`)
   }
+
+  
 
   // Call 2: LLM generates final answer using tool result
   const secondResponse = await fetchLLM(
@@ -481,10 +533,27 @@ export const answerQuestion = async (
 
   const appliedFilters =
     toolCall.function.name === "query_incidents" && Object.keys(toolArgs).length > 0 && !isAmbiguous
-      ? {
-          ...toolArgs,
-          ...(toolResult.resolvedAssignee ? { assignee: toolResult.resolvedAssignee } : {}),
-        }
+      ? (() => {
+          const base: IncidentFilters = {}
+          if (toolArgs.status) base.status = toolArgs.status
+          if (toolArgs.priority) base.priority = toolArgs.priority
+          if (toolArgs.title) base.title = toolArgs.title
+          if (toolArgs.fromDate) base.fromDate = toolArgs.fromDate
+          if (toolArgs.toDate) base.toDate = toolArgs.toDate
+
+          // Include assignee only when the tool result has a resolved or matching assignee
+          if (toolResult.resolvedAssignee) {
+            base.assignee = toolResult.resolvedAssignee
+          } else if (
+            toolArgs.assignee &&
+            Array.isArray(toolResult.matchingAssignees) &&
+            toolResult.matchingAssignees.length > 0
+          ) {
+            base.assignee = toolResult.matchingAssignees.length === 1 ? toolResult.matchingAssignees[0] : toolArgs.assignee
+          }
+
+          return Object.keys(base).length > 0 ? base : null
+        })()
       : null
   return { answer, appliedFilters, action }
 }

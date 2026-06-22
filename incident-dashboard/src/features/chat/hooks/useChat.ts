@@ -12,12 +12,12 @@ export type ChatMessage = {
 
 export const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const { setChatFilters } = useChatFilters()
+  const { chatFilters, setChatFilters } = useChatFilters()
   const { showToast } = useToast()
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: (opts: { question: string; selection?: { field: string; value: string } }) =>
-      queryChat(opts.question, messages, opts.selection),
+      queryChat(opts.question, messages, opts.selection, chatFilters),
     onMutate: (opts: { question: string }) => {
       setMessages((prev) => [...prev, { role: "user", content: opts.question }])
     },

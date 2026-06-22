@@ -23,6 +23,7 @@ export const queryChat = async (
   question: string,
   history: HistoryMessage[] = [],
   selection?: { field: string; value: string },
+  chatFilters?: AppliedFilters,
 ): Promise<ChatResult> => {
   const token = localStorage.getItem("auth_token")
   const headers: Record<string, string> = { "Content-Type": "application/json" }
@@ -33,7 +34,7 @@ export const queryChat = async (
   const response = await fetch(`${BASE_URL}/query`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ question, history, selection }),
+    body: JSON.stringify({ question, history, selection, chatFilters }),
   })
 
   if (response.status === 401) {

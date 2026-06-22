@@ -15,12 +15,14 @@ export const messageChat = async (req: Request, res: Response): Promise<void> =>
     : []
 
   const selection = req.body?.selection
+  const chatFilters = req.body?.chatFilters ?? null
 
   const { answer, appliedFilters } = await chatService.answerQuestion(
     question,
     history,
     req.user?.id,
     selection,
+    chatFilters,
   )
   sendSuccess(res, { answer, appliedFilters }, "Answer generated successfully")
 }
