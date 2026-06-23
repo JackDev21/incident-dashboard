@@ -22,8 +22,7 @@ export const useChat = () => {
   const { showToast } = useToast()
 
   const { mutate: sendMessage, isPending } = useMutation({
-    mutationFn: (opts: ChatMutationInput) =>
-      queryChat(opts.question, messages, opts.selection, chatFilters),
+    mutationFn: (opts: ChatMutationInput) => queryChat(opts.question, messages, opts.selection, chatFilters),
     onMutate: (opts: ChatMutationInput) => {
       setMessages((prev) => [...prev, { role: "user", content: opts.question }])
     },

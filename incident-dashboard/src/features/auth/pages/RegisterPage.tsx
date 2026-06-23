@@ -89,7 +89,7 @@ export const RegisterPage = () => {
         </form>
 
         <div className={styles.footer}>
-          {t("auth.alreadyAccount")} {" "}
+          {t("auth.alreadyAccount")}{" "}
           <Link to="/login" className={styles.link}>
             {t("auth.loginLink")}
           </Link>

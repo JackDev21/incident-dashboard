@@ -76,7 +76,7 @@ export const LoginPage = () => {
         </form>
 
         <div style={{ marginTop: "20px", textAlign: "center", fontSize: "14px", color: "#718096" }}>
-          {t("auth.noAccount")} {" "}
+          {t("auth.noAccount")}{" "}
           <Link to="/register" style={{ color: "#3182ce", textDecoration: "none", fontWeight: "600" }}>
             {t("auth.registerHere")}
           </Link>

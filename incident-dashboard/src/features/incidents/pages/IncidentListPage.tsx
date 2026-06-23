@@ -77,7 +77,11 @@ export const IncidentListPage = () => {
           <h1 className={styles.pageTitle}>{t("incidents.pageTitle")}</h1>
           <p className={styles.pageDescription}>{t("incidents.pageDescription")}</p>
         </div>
-        <Button label={t("incidents.newIncident")} icon={<Plus size={18} />} onClick={() => navigate("/incidents/create")} />
+        <Button
+          label={t("incidents.newIncident")}
+          icon={<Plus size={18} />}
+          onClick={() => navigate("/incidents/create")}
+        />
       </div>
 
       <IncidentFilters

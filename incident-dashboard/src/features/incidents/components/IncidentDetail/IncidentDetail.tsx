@@ -21,9 +21,7 @@ export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps
 
   const assigneeInitial = incident.assignee?.trim().charAt(0).toUpperCase() || "?"
   const creatorName =
-    typeof incident.creatorId === "object" && incident.creatorId?.name
-      ? incident.creatorId.name
-      : null
+    typeof incident.creatorId === "object" && incident.creatorId?.name ? incident.creatorId.name : null
 
   return (
     <div className={styles.wrapper}>

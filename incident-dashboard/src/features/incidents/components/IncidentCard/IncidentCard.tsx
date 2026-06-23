@@ -97,7 +97,11 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
         </span>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span className={styles.date}>{formattedDate}</span>
-          {creatorName && <span className={styles.reporter}>{t("incidents.detail.reporterRef")}: {creatorName}</span>}
+          {creatorName && (
+            <span className={styles.reporter}>
+              {t("incidents.detail.reporterRef")}: {creatorName}
+            </span>
+          )}
         </div>
       </div>
 

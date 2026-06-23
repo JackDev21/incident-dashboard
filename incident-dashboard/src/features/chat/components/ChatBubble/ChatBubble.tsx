@@ -56,7 +56,12 @@ const ChatMessage = ({ role, children, onSelect }: ChatMessageProps) => (
               if (role === "assistant" && onSelect && text) {
                 return (
                   <li className={styles.candidateItem} {...props}>
-                    <Button variant="ghost" type="button" onClick={() => onSelect(text)} className={styles.candidateBtn}>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      onClick={() => onSelect(text)}
+                      className={styles.candidateBtn}
+                    >
                       <div className={styles.candidateText}>{children}</div>
                     </Button>
                   </li>
@@ -92,9 +97,9 @@ export const ChatBubble = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const question = input.trim()
-      if (!question || isPending) return
-      setInput("")
-      sendMessage({ question })
+    if (!question || isPending) return
+    setInput("")
+    sendMessage({ question })
   }
 
   return createPortal(
@@ -126,18 +131,18 @@ export const ChatBubble = () => {
           </div>
 
           <div className={styles.messages}>
-            {messages.length === 0 && (
-              <p className={styles.empty}>{t("chat.emptyPrompt")}</p>
-            )}
-              {messages.map((msg, i) => (
-                <ChatMessage
-                  key={i}
-                  role={msg.role}
-                  onSelect={(text) => !isPending && sendMessage({ question: text, selection: { field: "assignee", value: text } })}
-                >
-                  {msg.content}
-                </ChatMessage>
-              ))}
+            {messages.length === 0 && <p className={styles.empty}>{t("chat.emptyPrompt")}</p>}
+            {messages.map((msg, i) => (
+              <ChatMessage
+                key={i}
+                role={msg.role}
+                onSelect={(text) =>
+                  !isPending && sendMessage({ question: text, selection: { field: "assignee", value: text } })
+                }
+              >
+                {msg.content}
+              </ChatMessage>
+            ))}
             {isPending && (
               <ChatMessage role="assistant">
                 <span className={styles.typing}>
