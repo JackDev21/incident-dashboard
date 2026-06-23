@@ -3,9 +3,18 @@ import { createPortal } from "react-dom"
 import { MessageCircle, X, Send, Bot, User, RotateCcw } from "lucide-react"
 import { Link } from "react-router-dom"
 import ReactMarkdown from "react-markdown"
+import type { ComponentPropsWithoutRef, ReactElement } from "react"
 import { Button } from "@/components/ui/Button"
 import { useChat, type ChatMessage as ChatMessageType } from "@/features/chat/hooks/useChat"
+import { useTranslation } from "react-i18next"
 import styles from "./ChatBubble.module.scss"
+
+type MarkdownListProps = ComponentPropsWithoutRef<"ul">
+type MarkdownListItemProps = ComponentPropsWithoutRef<"li">
+
+const isElementWithChildren = (node: React.ReactNode): node is ReactElement<{ children?: React.ReactNode }> => {
+  return typeof node === "object" && node !== null && "props" in node
+}
 
 type ChatMessageProps = {
   role: ChatMessageType["role"]
@@ -31,14 +40,14 @@ const ChatMessage = ({ role, children, onSelect }: ChatMessageProps) => (
               )
             },
             // Render lists and items: make candidate lists look like full-width buttons
-            ul: (props: any) => <ul className={styles.candidateList} {...props} />,
-            li: (props: any) => {
+            ul: (props: MarkdownListProps) => <ul className={styles.candidateList} {...props} />,
+            li: (props: MarkdownListItemProps) => {
               const { children } = props
 
               const flattenText = (node: React.ReactNode): string => {
                 if (typeof node === "string") return node
                 if (Array.isArray(node)) return node.map(flattenText).join("")
-                if (typeof node === "object" && node !== null && "props" in node) return flattenText((node as any).props.children)
+                if (isElementWithChildren(node)) return flattenText(node.props.children)
                 return ""
               }
 
@@ -68,6 +77,7 @@ const ChatMessage = ({ role, children, onSelect }: ChatMessageProps) => (
 )
 
 export const ChatBubble = () => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState("")
   const { messages, sendMessage, isPending, clearMessages } = useChat()
@@ -94,14 +104,14 @@ export const ChatBubble = () => {
           <div className={styles.header}>
             <div className={styles.headerTitle}>
               <Bot size={18} />
-              <span>Incident Assistant</span>
+              <span>{t("chat.title")}</span>
             </div>
             <div className={styles.headerActions}>
               <Button
                 variant="ghost"
                 icon={<RotateCcw size={16} />}
                 onClick={clearMessages}
-                title="New conversation"
+                title={t("chat.newConversation")}
                 className={styles.closeBtn}
                 disabled={messages.length === 0 || isPending}
               />
@@ -109,7 +119,7 @@ export const ChatBubble = () => {
                 variant="ghost"
                 icon={<X size={18} />}
                 onClick={() => setOpen(false)}
-                title="Close chat"
+                title={t("chat.closeChat")}
                 className={styles.closeBtn}
               />
             </div>
@@ -117,7 +127,7 @@ export const ChatBubble = () => {
 
           <div className={styles.messages}>
             {messages.length === 0 && (
-              <p className={styles.empty}>Ask me about your incidents — status, assignees, priorities…</p>
+              <p className={styles.empty}>{t("chat.emptyPrompt")}</p>
             )}
               {messages.map((msg, i) => (
                 <ChatMessage
@@ -144,7 +154,7 @@ export const ChatBubble = () => {
             <input
               className={styles.input}
               type="text"
-              placeholder="Ask a question..."
+              placeholder={t("chat.inputPlaceholder")}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isPending}
@@ -155,7 +165,7 @@ export const ChatBubble = () => {
               type="submit"
               icon={<Send size={16} />}
               disabled={!input.trim() || isPending}
-              title="Send"
+              title={t("chat.send")}
               className={styles.sendBtn}
             />
           </form>
@@ -165,7 +175,7 @@ export const ChatBubble = () => {
       <button
         className={`${styles.bubble} ${open ? styles.bubbleActive : ""}`}
         onClick={() => setOpen((o) => !o)}
-        aria-label="Open chat assistant"
+        aria-label={t("chat.openAssistant")}
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
       </button>

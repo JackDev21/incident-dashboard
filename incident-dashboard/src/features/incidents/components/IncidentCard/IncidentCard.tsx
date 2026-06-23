@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { ConfirmModal } from "@/components/ui/Modal"
 import { Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import styles from "@/features/incidents/components/IncidentCard/IncidentCard.module.scss"
 
 import type { Incident } from "@/features/incidents/types/incident.types"
@@ -38,6 +39,7 @@ type IncidentCardProps = {
 }
 
 export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
+  const { t, i18n } = useTranslation()
   const [showModal, setShowModal] = useState(false)
   const userInitials = getUserInitials(incident.assignee)
   const avatarColor = getColorFromName(incident.assignee)
@@ -53,8 +55,8 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
   }
 
   const formattedDate = incident.createdAt
-    ? new Date(incident.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
-    : "Unknown date"
+    ? new Date(incident.createdAt).toLocaleDateString(i18n.language, { month: "short", day: "numeric" })
+    : t("common.unknownDate")
 
   const isResolved = incident.status === "resolved"
 
@@ -78,7 +80,7 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
             icon={<Trash2 size={16} />}
             variant="icon"
             onClick={handleDeleteClick}
-            title="Delete incident"
+            title={t("incidents.delete.buttonTitle")}
             className={styles.deleteButton}
           />
         )}
@@ -95,14 +97,16 @@ export const IncidentCard = ({ incident, onDelete }: IncidentCardProps) => {
         </span>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
           <span className={styles.date}>{formattedDate}</span>
-          {creatorName && <span className={styles.reporter}>Ref: {creatorName}</span>}
+          {creatorName && <span className={styles.reporter}>{t("incidents.detail.reporterRef")}: {creatorName}</span>}
         </div>
       </div>
 
       {showModal && (
         <ConfirmModal
-          title="Delete incident"
-          description={`"${incident.title}" will be permanently deleted. This action cannot be undone.`}
+          title={t("incidents.delete.title")}
+          description={t("incidents.delete.description", { title: incident.title })}
+          confirmLabel={t("incidents.delete.confirmLabel")}
+          cancelLabel={t("common.cancel")}
           onConfirm={handleConfirm}
           onCancel={() => setShowModal(false)}
         />

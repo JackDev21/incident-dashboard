@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from "react-i18next"
 import styles from './Pagination.module.scss'
 
 interface PaginationProps {
@@ -8,12 +9,14 @@ interface PaginationProps {
 }
 
 export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+  const { t } = useTranslation()
+
   if (totalPages <= 1) return null
 
   return (
     <div className={styles.paginationContainer}>
       <div className={styles.pageInfo}>
-        Page {currentPage} of {totalPages}
+        {t("incidents.pagination.pageOf", { current: currentPage, total: totalPages })}
       </div>
       <div className={styles.controls}>
         <button 
@@ -21,7 +24,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
           onClick={() => onPageChange(currentPage - 1)} 
           disabled={currentPage === 1}
         >
-          Previous
+          {t("incidents.pagination.previous")}
         </button>
         
         {/* Simple page numbers for small sets, could be improved for many pages */}
@@ -45,7 +48,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
           onClick={() => onPageChange(currentPage + 1)} 
           disabled={currentPage === totalPages}
         >
-          Next
+          {t("incidents.pagination.next")}
         </button>
       </div>
     </div>

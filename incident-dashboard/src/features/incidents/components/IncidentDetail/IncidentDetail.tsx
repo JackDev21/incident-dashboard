@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/Badge"
 import type { Incident, IncidentStatus } from "@/features/incidents/types/incident.types"
 import { getPriorityVariant } from "@/features/incidents/utils/incidentBadgeVariants"
+import { useTranslation } from "react-i18next"
 import styles from "./IncidentDetail.module.scss"
 
 type IncidentDetailProps = {
@@ -9,13 +10,14 @@ type IncidentDetailProps = {
 }
 
 export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps) => {
+  const { t, i18n } = useTranslation()
   const formattedDate = incident.createdAt
-    ? new Date(incident.createdAt).toLocaleDateString(undefined, {
+    ? new Date(incident.createdAt).toLocaleDateString(i18n.language, {
         day: "numeric",
         month: "long",
         year: "numeric",
       })
-    : "Unknown date"
+    : t("common.unknownDate")
 
   const assigneeInitial = incident.assignee?.trim().charAt(0).toUpperCase() || "?"
   const creatorName =
@@ -32,9 +34,9 @@ export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps
             value={incident.status}
             onChange={(e) => onStatusChange?.(e.target.value as IncidentStatus)}
           >
-            <option value="open">open</option>
-            <option value="in progress">in progress</option>
-            <option value="resolved">resolved</option>
+            <option value="open">{t("incidents.status.open")}</option>
+            <option value="in progress">{t("incidents.status.inProgress")}</option>
+            <option value="resolved">{t("incidents.status.resolved")}</option>
           </select>
           <Badge label={incident.priority} variant={getPriorityVariant(incident.priority)} />
         </div>
@@ -45,7 +47,7 @@ export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps
 
       <div className={styles.meta}>
         <div className={styles.metaItem}>
-          <span className={styles.metaLabel}>Assignee</span>
+          <span className={styles.metaLabel}>{t("incidents.detail.assignee")}</span>
           <span className={styles.metaValue}>
             <span className={styles.avatar} aria-hidden="true">
               {assigneeInitial}
@@ -55,12 +57,12 @@ export const IncidentDetail = ({ incident, onStatusChange }: IncidentDetailProps
         </div>
         {creatorName && (
           <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Reported by</span>
+            <span className={styles.metaLabel}>{t("incidents.detail.reportedBy")}</span>
             <span className={styles.metaValue}>{creatorName}</span>
           </div>
         )}
         <div className={styles.metaItem}>
-          <span className={styles.metaLabel}>Created at</span>
+          <span className={styles.metaLabel}>{t("incidents.detail.createdAt")}</span>
           <span className={styles.metaValue}>{formattedDate}</span>
         </div>
       </div>

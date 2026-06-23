@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button"
 import { Pagination } from "@/components/ui/Pagination"
 import { useNavigate } from "react-router-dom"
 import { Plus, MessageCircle } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
 
 const EMPTY_FILTERS: IncidentFiltersState = { status: "", priority: "", assignee: "" }
@@ -23,6 +24,7 @@ const normalizeAssigneeText = (value: string): string =>
 
 export const IncidentListPage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [page, setPage] = useState(1)
   const [manualFilters, setManualFilters] = useState<IncidentFiltersState>(EMPTY_FILTERS)
   const { chatFilters, setChatFilters } = useChatFilters()
@@ -54,7 +56,7 @@ export const IncidentListPage = () => {
     return (
       <div className={styles.loadingState}>
         <div className={styles.spinner}></div>
-        <p>Loading incidents...</p>
+        <p>{t("incidents.loading")}</p>
       </div>
     )
   }
@@ -63,7 +65,7 @@ export const IncidentListPage = () => {
     return (
       <div className={styles.errorState}>
         <p>{error.message}</p>
-        <Button label="Try again" onClick={() => window.location.reload()} variant="secondary" />
+        <Button label={t("common.tryAgain")} onClick={() => window.location.reload()} variant="secondary" />
       </div>
     )
   }
@@ -72,10 +74,10 @@ export const IncidentListPage = () => {
     <div className={styles.pageContainer}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Incidents</h1>
-          <p className={styles.pageDescription}>Manage and track all system incidents.</p>
+          <h1 className={styles.pageTitle}>{t("incidents.pageTitle")}</h1>
+          <p className={styles.pageDescription}>{t("incidents.pageDescription")}</p>
         </div>
-        <Button label="New Incident" icon={<Plus size={18} />} onClick={() => navigate("/incidents/create")} />
+        <Button label={t("incidents.newIncident")} icon={<Plus size={18} />} onClick={() => navigate("/incidents/create")} />
       </div>
 
       <IncidentFilters
@@ -87,8 +89,8 @@ export const IncidentListPage = () => {
       {chatFilters && (
         <div className={styles.chatFilterBanner}>
           <MessageCircle size={15} />
-          <span>Filters applied from chat assistant</span>
-          <button onClick={handleReset}>Clear</button>
+          <span>{t("incidents.chatFiltersApplied")}</span>
+          <button onClick={handleReset}>{t("incidents.clear")}</button>
         </div>
       )}
 

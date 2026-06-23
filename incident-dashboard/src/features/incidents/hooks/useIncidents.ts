@@ -3,6 +3,7 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query"
 import type { IncidentFiltersState } from "@/features/incidents/components/IncidentFilters"
 import { useToast } from "@/app/context/useToast"
 import { useAuth } from "@/features/auth/context/AuthContext"
+import i18n from "@/i18n"
 
 export const useIncidents = (page: number, filters: Partial<IncidentFiltersState> = {}) => {
   const queryClient = useQueryClient()
@@ -29,7 +30,7 @@ export const useIncidents = (page: number, filters: Partial<IncidentFiltersState
     mutationFn: deleteIncident,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["incidents"] })
-      showToast("Incident deleted", "danger")
+      showToast(i18n.t("toast.incidentDeleted"), "danger")
     },
     onError: (error) => {
       console.error("Error deleting incident:", error)

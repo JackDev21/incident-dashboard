@@ -4,10 +4,16 @@ import { queryChat } from "../services/chat.service"
 import { useChatFilters } from "../context/useChatFilters"
 import type { IncidentFiltersState } from "@/features/incidents/components/IncidentFilters"
 import { useToast } from "@/app/context/useToast"
+import i18n from "@/i18n"
 
 export type ChatMessage = {
   role: "user" | "assistant"
   content: string
+}
+
+type ChatMutationInput = {
+  question: string
+  selection?: { field: string; value: string }
 }
 
 export const useChat = () => {
@@ -16,18 +22,18 @@ export const useChat = () => {
   const { showToast } = useToast()
 
   const { mutate: sendMessage, isPending } = useMutation({
-    mutationFn: (opts: { question: string; selection?: { field: string; value: string } }) =>
+    mutationFn: (opts: ChatMutationInput) =>
       queryChat(opts.question, messages, opts.selection, chatFilters),
-    onMutate: (opts: { question: string }) => {
+    onMutate: (opts: ChatMutationInput) => {
       setMessages((prev) => [...prev, { role: "user", content: opts.question }])
     },
     onSuccess: ({ answer, appliedFilters, action }) => {
       setMessages((prev) => [...prev, { role: "assistant", content: answer }])
 
       if (action === "created") {
-        showToast("Incident created successfully", "success")
+        showToast(i18n.t("toast.incidentCreatedSuccess"), "success")
       } else if (action === "updated") {
-        showToast("Incident updated successfully", "success")
+        showToast(i18n.t("toast.incidentUpdatedSuccess"), "success")
       }
 
       if (appliedFilters) {

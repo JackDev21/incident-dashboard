@@ -3,6 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import type { IncidentStatus } from "../types/incident.types"
 import { useToast } from "@/app/context/useToast"
 import type { Incident } from "../types/incident.types"
+import i18n from "@/i18n"
 
 export const useIncidentDetails = (id: string | undefined) => {
   const queryClient = useQueryClient()
@@ -23,7 +24,7 @@ export const useIncidentDetails = (id: string | undefined) => {
     onSuccess: (data: Incident) => {
       console.log("[Mutation] updateIncident success", data)
       queryClient.invalidateQueries({ queryKey: ["incidents", id] })
-      showToast("Incident updated", "warning")
+      showToast(i18n.t("toast.incidentUpdated"), "warning")
     },
   })
 

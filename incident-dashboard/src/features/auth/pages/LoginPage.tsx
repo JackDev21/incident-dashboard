@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { Eye, EyeOff } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import styles from "./LoginPage.module.scss"
 
 export const LoginPage = () => {
@@ -13,6 +14,7 @@ export const LoginPage = () => {
 
   const { login } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,7 +25,7 @@ export const LoginPage = () => {
       await login(email, password)
       navigate("/incidents")
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Error logging in"
+      const errorMessage = err instanceof Error ? err.message : t("auth.loginError")
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -33,26 +35,26 @@ export const LoginPage = () => {
   return (
     <div className={styles.container}>
       <div className={styles.loginCard}>
-        <h1 className={styles.title}>Login</h1>
-        <p className={styles.subtitle}>Enter your credentials to access the system</p>
+        <h1 className={styles.title}>{t("auth.loginTitle")}</h1>
+        <p className={styles.subtitle}>{t("auth.loginSubtitle")}</p>
 
         {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t("auth.email")}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="you@email.com"
+              placeholder={t("auth.emailPlaceholder")}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t("auth.password")}</label>
             <div className={styles.passwordWrapper}>
               <input
                 id="password"
@@ -60,7 +62,7 @@ export const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                placeholder={t("auth.passwordPlaceholder")}
               />
               <div className={styles.togglePassword} onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -69,14 +71,14 @@ export const LoginPage = () => {
           </div>
 
           <button type="submit" className={styles.submitButton} disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? t("auth.loggingIn") : t("auth.loginButton")}
           </button>
         </form>
 
         <div style={{ marginTop: "20px", textAlign: "center", fontSize: "14px", color: "#718096" }}>
-          Don't have an account?{" "}
+          {t("auth.noAccount")} {" "}
           <Link to="/register" style={{ color: "#3182ce", textDecoration: "none", fontWeight: "600" }}>
-            Register here
+            {t("auth.registerHere")}
           </Link>
         </div>
       </div>

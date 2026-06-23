@@ -51,6 +51,20 @@
   gap: 12px;
 }
 
+.languageLabel {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.languageSelect {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
 .avatar {
   width: 32px;
   height: 32px;

@@ -3,16 +3,18 @@ import { ArrowLeft } from "lucide-react"
 import { useIncidentDetails } from "@/features/incidents/hooks/useIncidentDetails"
 import { Button } from "@/components/ui/Button"
 import { IncidentDetail } from "../components/IncidentDetail"
+import { useTranslation } from "react-i18next"
 import styles from "./IncidentDetailPage.module.scss"
 
 export const IncidentDetailPage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const { id } = useParams<{ id: string }>()
   const { incident, loading, error, updateStatus } = useIncidentDetails(id)
 
   if (loading) {
-    return <p className={styles.state}>Loading incident...</p>
+    return <p className={styles.state}>{t("incidents.loading")}</p>
   }
 
   if (error) {
@@ -20,14 +22,14 @@ export const IncidentDetailPage = () => {
   }
 
   if (!incident) {
-    return <p className={styles.state}>Incident not found.</p>
+    return <p className={styles.state}>{t("incidents.detail.notFound")}</p>
   }
 
   return (
     <div className={styles.page}>
       <Button
         icon={<ArrowLeft size={16} />}
-        label="Back to list"
+        label={t("incidents.detail.backToList")}
         variant="secondary"
         onClick={() => navigate("/incidents")}
       />

@@ -1,4 +1,5 @@
 import type { IncidentPriority, IncidentStatus } from "@/features/incidents/types/incident.types"
+import { useTranslation } from "react-i18next"
 import styles from "./IncidentFilters.module.scss"
 
 export type IncidentFiltersState = {
@@ -15,6 +16,7 @@ type IncidentFiltersProps = {
 }
 
 export const IncidentFilters = ({ filters, assignees, onChange, onReset }: IncidentFiltersProps) => {
+  const { t } = useTranslation()
   const hasActiveFilters = filters.status !== "" || filters.priority !== "" || filters.assignee !== ""
 
   return (
@@ -24,33 +26,33 @@ export const IncidentFilters = ({ filters, assignees, onChange, onReset }: Incid
           className={styles.select}
           value={filters.status}
           onChange={(e) => onChange({ ...filters, status: e.target.value as IncidentStatus | "" })}
-          aria-label="Filter by status"
+          aria-label={t("incidents.filters.byStatus")}
         >
-          <option value="">All statuses</option>
-          <option value="open">Open</option>
-          <option value="in progress">In progress</option>
-          <option value="resolved">Resolved</option>
+          <option value="">{t("incidents.filters.allStatuses")}</option>
+          <option value="open">{t("incidents.status.open")}</option>
+          <option value="in progress">{t("incidents.status.inProgress")}</option>
+          <option value="resolved">{t("incidents.status.resolved")}</option>
         </select>
 
         <select
           className={styles.select}
           value={filters.priority}
           onChange={(e) => onChange({ ...filters, priority: e.target.value as IncidentPriority | "" })}
-          aria-label="Filter by priority"
+          aria-label={t("incidents.filters.byPriority")}
         >
-          <option value="">All priorities</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
+          <option value="">{t("incidents.filters.allPriorities")}</option>
+          <option value="high">{t("incidents.priority.high")}</option>
+          <option value="medium">{t("incidents.priority.medium")}</option>
+          <option value="low">{t("incidents.priority.low")}</option>
         </select>
 
         <select
           className={styles.select}
           value={filters.assignee}
           onChange={(e) => onChange({ ...filters, assignee: e.target.value })}
-          aria-label="Filter by assignee"
+          aria-label={t("incidents.filters.byAssignee")}
         >
-          <option value="">All assignees</option>
+          <option value="">{t("incidents.filters.allAssignees")}</option>
           {assignees.map((a) => (
             <option key={a} value={a}>
               {a}
@@ -60,7 +62,7 @@ export const IncidentFilters = ({ filters, assignees, onChange, onReset }: Incid
 
         {hasActiveFilters && (
           <button className={styles.resetButton} onClick={onReset}>
-            Clear filters
+            {t("incidents.filters.clearFilters")}
           </button>
         )}
       </div>

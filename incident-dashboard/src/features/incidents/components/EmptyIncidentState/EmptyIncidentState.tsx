@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next"
+
 export const EmptyIncidentState = () => {
-  return <p>No incidents found.</p>
+  const { t } = useTranslation()
+  return <p>{t("incidents.emptyState")}</p>
 }
