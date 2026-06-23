@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
+import { getJwtSecret } from "../../config"
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const JWT_SECRET = process.env.JWT_SECRET
-  if (!JWT_SECRET) {
-    console.error("CRITICAL: JWT_SECRET no definido en las variables de entorno")
-    return res.status(500).json({ message: "Internal server error: Missing configuration" })
-  }
+  const jwtSecret = getJwtSecret()
 
   try {
     const authHeader = req.headers.authorization
@@ -16,7 +13,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     }
 
     const token = authHeader.split(" ")[1]
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string }
+    const decoded = jwt.verify(token, jwtSecret) as { id: string; email: string }
 
     // Adjuntamos la información del usuario al objeto req
     req.user = decoded

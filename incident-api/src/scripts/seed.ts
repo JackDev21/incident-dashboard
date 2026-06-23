@@ -1,6 +1,7 @@
 import "dotenv/config"
 import mongoose from "mongoose"
-import { IncidentModel } from "../modules/incidents/incident.model"
+import { IncidentModel } from "../modules"
+
 
 const STATUSES = ["open", "in progress", "resolved"] as const
 const PRIORITIES = ["low", "medium", "high"] as const

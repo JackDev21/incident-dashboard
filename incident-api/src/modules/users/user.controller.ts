@@ -3,8 +3,8 @@ import { UserService } from "./user.service"
 import { RegisterUserSchema, LoginUserSchema } from "./dtos/user.dto"
 import { ZodError } from "zod"
 import jwt from "jsonwebtoken"
+import { getJwtSecret } from "../../config"
 
-const JWT_SECRET = process.env.JWT_SECRET || "super-secret-portfolio-key"
 const userService = new UserService()
 
 export class UserController {
@@ -14,7 +14,7 @@ export class UserController {
       const user = await userService.createUser(validatedData)
 
       const userId = (user as any)._id || user.id
-      const token = jwt.sign({ id: userId, email: user.email }, JWT_SECRET, { expiresIn: "24h" })
+      const token = jwt.sign({ id: userId, email: user.email }, getJwtSecret(), { expiresIn: "24h" })
 
       const userResponse = { ...user }
       delete userResponse.password

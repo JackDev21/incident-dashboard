@@ -225,11 +225,14 @@ The `appliedFilters` field is returned when the assistant queries incidents usin
 | -------------- | ---------------------------- | -------------------------------------------- |
 | `PORT`         | Port for the backend server  | `3000`                                       |
 | `MONGODB_URI`  | URI for MongoDB connection   | `mongodb://localhost:27017/incident_db`      |
+| `JWT_SECRET`   | Secret used to sign JWTs     | `replace_with_a_long_random_secret`          |
 | `LLM_API_KEY`  | API key for the LLM provider | `your_llm_api_key_here`                      |
 | `LLM_MODEL`    | Model to use                 | `mistral-small-latest`                       |
 | `LLM_BASE_URL` | LLM API base URL             | `https://api.mistral.ai/v1/chat/completions` |
 | `LLM_PROVIDER` | LLM provider identifier      | `mistral`                                    |
 
+> `JWT_SECRET` is required for any authenticated flow. The API now starts in strict mode and will fail fast if it is missing.
+>
 > `LLM_API_KEY` is required for the `/api/chat/query` endpoint. The rest of the LLM vars have defaults set in the service.
 
 ### Setup

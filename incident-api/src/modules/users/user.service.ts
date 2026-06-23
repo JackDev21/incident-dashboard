@@ -2,15 +2,14 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { UserModel } from "./user.model"
 import { User } from "./user.types"
-
-const JWT_SECRET = process.env.JWT_SECRET || "super-secret-portfolio-key"
+import { getJwtSecret } from "../../config"
 
 export class UserService {
   async createUser(userData: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
     const { password, ...otherData } = userData
 
     if (!password) {
-      throw new Error('Password is required')
+      throw new Error("Password is required")
     }
 
     // 1. Verificar si el usuario ya existe
@@ -46,7 +45,7 @@ export class UserService {
     }
 
     // 3. Generar Token JWT
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "24h" })
+    const token = jwt.sign({ id: user._id, email: user.email }, getJwtSecret(), { expiresIn: "24h" })
 
     const userResponse = user.toObject()
     delete userResponse.password
@@ -58,7 +57,7 @@ export class UserService {
   }
 
   async findById(id: string): Promise<User | null> {
-    const user = await UserModel.findById(id).select("-password").lean();
-    return user as User | null;
+    const user = await UserModel.findById(id).select("-password").lean()
+    return user as User | null
   }
 }

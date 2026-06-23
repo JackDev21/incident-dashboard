@@ -132,6 +132,7 @@ An **incident** represents an issue that needs to be tracked and resolved. It ha
 | -------------- | ---------------------------- | -------------------------------------------- |
 | `PORT`         | Port for the backend server  | `3000`                                       |
 | `MONGODB_URI`  | URI for MongoDB connection   | `mongodb://localhost:27017/incident_db`      |
+| `JWT_SECRET`   | Secret used to sign JWTs     | `replace_with_a_long_random_secret`          |
 | `LLM_API_KEY`  | API key for the LLM provider | `your_llm_api_key_here`                      |
 | `LLM_MODEL`    | Model name to use            | `mistral-small-latest`                       |
 | `LLM_BASE_URL` | Base URL for the LLM API     | `https://api.mistral.ai/v1/chat/completions` |

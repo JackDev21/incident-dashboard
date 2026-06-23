@@ -5,7 +5,7 @@ import cors from "cors"
 import { io } from "./socket"
 import { incidentRoutes, chatRoutes, userRoutes } from "./modules"
 import { requestLogger, notFound } from "./middleware"
-import { connectDB } from "./config/db/connection"
+import { connectDB, getJwtSecret } from "./config"
 import helmet from "helmet"
 import { chatRateLimiter, globalRateLimiter } from "./middleware/http/security"
 import { errorHandler } from "./middleware/http/errorHandler"
@@ -56,6 +56,7 @@ io.on("connection", (socket) => {
 })
 ;(async () => {
   try {
+    getJwtSecret()
     await connectDB()
     httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`)
