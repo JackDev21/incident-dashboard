@@ -5,14 +5,13 @@ import { chatRoutes } from ".."
 import { notFound } from "../../../middleware"
 import { createAppError, errorHandler } from "../../../middleware/http/errorHandler"
 
-
 jest.mock("../services/chatService", () => ({
   answerQuestion: jest.fn(),
 }))
 
 // Mock auth middleware
 jest.mock("../../../middleware/http/auth", () => ({
-  authMiddleware: (req: any, res: any, next: any) => {
+  authMiddleware: (req: any, _res: any, next: any) => {
     req.user = { id: "user-1", email: "test@example.com" }
     next()
   },
@@ -96,7 +95,13 @@ describe("chat routes", () => {
         appliedFilters: { status: "open" },
       },
     })
-    expect(mockedAnswerQuestion).toHaveBeenCalledWith("How many open incidents are there?", [], "user-1", undefined)
+    expect(mockedAnswerQuestion).toHaveBeenCalledWith(
+      "How many open incidents are there?",
+      [],
+      "user-1",
+      undefined,
+      null,
+    )
   })
 
   it("forwards history to the service when provided", async () => {
@@ -116,7 +121,13 @@ describe("chat routes", () => {
 
     await request(app).post("/api/chat/query").send({ question: "And how many are high priority?", history })
 
-    expect(mockedAnswerQuestion).toHaveBeenCalledWith("And how many are high priority?", history, "user-1", undefined)
+    expect(mockedAnswerQuestion).toHaveBeenCalledWith(
+      "And how many are high priority?",
+      history,
+      "user-1",
+      undefined,
+      null,
+    )
   })
 
   it("returns 500 when LLM_API_KEY is not configured", async () => {
