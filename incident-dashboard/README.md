@@ -46,6 +46,7 @@ src/
     ui/                 # Reusable UI primitives (Button, Card, Badge, Modal)
     layout/             # App layout and Header
   features/
+    auth/               # Authentication feature (context, pages, services)
     incidents/          # Incident domain
       components/       # IncidentCard, IncidentDetail, IncidentFilters, EmptyIncidentState
       hooks/            # useIncidents, useIncidentDetails
@@ -58,6 +59,8 @@ src/
       context/          # ChatFiltersContext, ChatFiltersProvider, useChatFilters
       hooks/            # useChat
       services/         # chat.service.ts (API calls)
+  lib/
+    http/               # Shared HTTP client (auth headers + consistent errors)
   styles/               # Global styles and variables
 ```
 
@@ -165,6 +168,8 @@ The dashboard will be available at `http://localhost:5173`.
 | Path                | Description                |
 | ------------------- | -------------------------- |
 | `/`                 | Redirects to `/incidents`  |
+| `/login`            | User login                 |
+| `/register`         | User registration          |
 | `/incidents`        | Incident list with filters |
 | `/incidents/create` | Create a new incident      |
 | `/incidents/:id`    | Incident detail            |

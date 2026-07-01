@@ -47,30 +47,34 @@ This API is designed to:
 incident-api/
 ├── src/
 │   ├── config/
-│   │   └── db.ts                           # Database connection
+│   │   ├── auth.ts                         # JWT secret helpers
+│   │   └── db/                             # Database connection
 │   ├── middleware/
-│   │   ├── errorHandler.ts                 # Global error handling, asyncHandler, validateRequest
+│   │   ├── http/                           # HTTP middleware (auth, validation, errors, security)
+│   │   ├── socket/                         # WebSocket middleware (auth, throttling, connection limits)
 │   │   └── index.ts                        # Middleware exports (requestLogger, notFound)
 │   ├── modules/
 │   │   ├── incidents/
-│   │   │   ├── dtos/
-│   │   │   │   └── create-incident.dto.ts  # Validation DTOs
-│   │   │   ├── incident.controller.ts      # Request handlers
-│   │   │   ├── incident.model.ts           # Mongoose schema
-│   │   │   ├── incident.routes.ts          # API routes
-│   │   │   ├── incident.service.ts         # Business logic
-│   │   │   ├── incident.types.ts           # TypeScript types
+│   │   │   ├── controllers/                # Request handlers
+│   │   │   ├── routes/                     # API routes
+│   │   │   ├── services/                   # Business logic
+│   │   │   ├── repositories/               # Data access
+│   │   │   ├── models/                     # Mongoose schema
+│   │   │   ├── dtos/                       # Validation DTOs
+│   │   │   ├── types/                      # TypeScript types
 │   │   │   └── index.ts                    # Module exports
 │   │   ├── chat/
-│   │   │   ├── chat.controller.ts          # Chat request handler
-│   │   │   ├── chat.routes.ts              # Chat routes
-│   │   │   ├── chat.service.ts             # LLM integration + tool calling
+│   │   │   ├── controller/                 # Chat request handler
+│   │   │   ├── routes/                     # Chat routes
+│   │   │   ├── services/                   # LLM integration + tool calling
 │   │   │   └── index.ts                    # Module exports
+│   │   ├── users/                          # User registration/login module
 │   │   └── index.ts                        # Modules exports
 │   ├── types/
 │   │   └── common.types.ts                 # Global types (ApiResponse, PaginatedResponse)
 │   ├── utils/
 │   │   └── responses.ts                    # Response helpers (sendSuccess, sendError)
+│   ├── socket.ts                           # Socket.io server instance + helpers
 │   └── index.ts                            # Entry point
 ├── .env.example                            # Environment variables template
 ├── package.json                            # Project dependencies
@@ -109,6 +113,18 @@ These values are applied against `createdAt`.
 | Method | Endpoint          | Description                          | Request Body (JSON)      |
 | ------ | ----------------- | ------------------------------------ | ------------------------ |
 | POST   | `/api/chat/query` | Ask the AI assistant about incidents | `{ question, history? }` |
+
+### Users
+
+| Method | Endpoint              | Description         | Request Body (JSON)           |
+| ------ | --------------------- | ------------------- | ----------------------------- |
+| POST   | `/api/users/register` | Register new user   | `{ name, email, password }`   |
+| POST   | `/api/users/login`    | Login existing user | `{ email, password }`         |
+
+> Authentication required:
+>
+> - `/api/incidents/*` and `/api/chat/query` require `Authorization: Bearer <token>`.
+> - WebSocket connection requires JWT in handshake auth.
 
 ### Health
 
