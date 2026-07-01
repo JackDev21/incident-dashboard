@@ -13,6 +13,7 @@
   align-items: center;
 }
 
+.input,
 .select {
   appearance: none;
   background-color: var(--bg-card);
@@ -26,6 +27,12 @@
   background-repeat: no-repeat;
   background-position: right 10px center;
   transition: border-color 0.15s ease;
+
+  &[type="date"] {
+    padding-right: 12px;
+    min-width: 150px;
+    background-image: none;
+  }
 
   &:focus {
     outline: none;

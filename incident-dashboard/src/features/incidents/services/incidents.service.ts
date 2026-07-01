@@ -64,6 +64,8 @@ export const getIncidents = async (
   if (filters?.status) params.set("status", filters.status)
   if (filters?.priority) params.set("priority", filters.priority)
   if (filters?.assignee) params.set("assignee", filters.assignee)
+  if (filters?.fromDate) params.set("fromDate", filters.fromDate)
+  if (filters?.toDate) params.set("toDate", filters.toDate)
 
   const response = await fetch(`${BASE_URL}?${params.toString()}`, {
     headers: getAuthHeaders(),

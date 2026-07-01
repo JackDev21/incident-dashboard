@@ -6,6 +6,8 @@ export type IncidentFiltersState = {
   status: IncidentStatus | ""
   priority: IncidentPriority | ""
   assignee: string
+  fromDate: string
+  toDate: string
 }
 
 type IncidentFiltersProps = {
@@ -17,7 +19,8 @@ type IncidentFiltersProps = {
 
 export const IncidentFilters = ({ filters, assignees, onChange, onReset }: IncidentFiltersProps) => {
   const { t } = useTranslation()
-  const hasActiveFilters = filters.status !== "" || filters.priority !== "" || filters.assignee !== ""
+  const hasActiveFilters =
+    filters.status !== "" || filters.priority !== "" || filters.assignee !== "" || filters.fromDate !== "" || filters.toDate !== ""
 
   return (
     <div className={styles.wrapper}>
@@ -59,6 +62,24 @@ export const IncidentFilters = ({ filters, assignees, onChange, onReset }: Incid
             </option>
           ))}
         </select>
+
+        <input
+          className={styles.input}
+          type="date"
+          value={filters.fromDate}
+          onChange={(e) => onChange({ ...filters, fromDate: e.target.value })}
+          aria-label={t("incidents.filters.byFromDate")}
+          title={t("incidents.filters.byFromDate")}
+        />
+
+        <input
+          className={styles.input}
+          type="date"
+          value={filters.toDate}
+          onChange={(e) => onChange({ ...filters, toDate: e.target.value })}
+          aria-label={t("incidents.filters.byToDate")}
+          title={t("incidents.filters.byToDate")}
+        />
 
         {hasActiveFilters && (
           <button className={styles.resetButton} onClick={onReset}>

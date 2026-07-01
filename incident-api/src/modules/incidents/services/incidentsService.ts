@@ -8,6 +8,24 @@ type IncidentFilters = {
   status?: string
   priority?: string
   assignee?: string
+  fromDate?: string
+  toDate?: string
+}
+
+const buildIncidentQuery = (filters: IncidentFilters): Record<string, unknown> => {
+  const query: Record<string, unknown> = {}
+
+  if (filters.status) query.status = filters.status
+  if (filters.priority) query.priority = filters.priority
+
+  if (filters.fromDate || filters.toDate) {
+    const createdAtFilter: { $gte?: Date; $lte?: Date } = {}
+    if (filters.fromDate) createdAtFilter.$gte = new Date(filters.fromDate)
+    if (filters.toDate) createdAtFilter.$lte = new Date(`${filters.toDate}T23:59:59.999Z`)
+    query.createdAt = createdAtFilter
+  }
+
+  return query
 }
 
 export const getAllIncidents = async (
@@ -15,9 +33,7 @@ export const getAllIncidents = async (
   limit: number,
   filters: IncidentFilters = {},
 ): Promise<{ data: Incident[]; total: number; page: number; totalPages: number }> => {
-  const query: Record<string, unknown> = {}
-  if (filters.status) query.status = filters.status
-  if (filters.priority) query.priority = filters.priority
+  const query = buildIncidentQuery(filters)
 
   if (filters.assignee) {
     const matchingIncidents = (await incidentRepository.findAll(query)) as Incident[]

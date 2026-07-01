@@ -12,7 +12,7 @@ import { Plus, MessageCircle } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import styles from "@/features/incidents/pages/IncidentListPage.module.scss"
 
-const EMPTY_FILTERS: IncidentFiltersState = { status: "", priority: "", assignee: "" }
+const EMPTY_FILTERS: IncidentFiltersState = { status: "", priority: "", assignee: "", fromDate: "", toDate: "" }
 
 const normalizeAssigneeText = (value: string): string =>
   value

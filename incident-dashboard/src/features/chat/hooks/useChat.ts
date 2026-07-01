@@ -40,6 +40,8 @@ export const useChat = () => {
           status: (appliedFilters.status as IncidentFiltersState["status"]) ?? "",
           priority: (appliedFilters.priority as IncidentFiltersState["priority"]) ?? "",
           assignee: appliedFilters.assignee ?? "",
+          fromDate: appliedFilters.fromDate ?? "",
+          toDate: appliedFilters.toDate ?? "",
         }
         setChatFilters(filters)
       }
@@ -51,7 +53,7 @@ export const useChat = () => {
 
   const clearMessages = () => {
     setMessages([])
-    setChatFilters({ status: "", priority: "", assignee: "" })
+    setChatFilters({ status: "", priority: "", assignee: "", fromDate: "", toDate: "" })
   }
 
   return { messages, sendMessage, isPending, clearMessages }
