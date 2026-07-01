@@ -9,7 +9,7 @@ import { connectDB, getJwtSecret } from "./config"
 import helmet from "helmet"
 import { chatRateLimiter, globalRateLimiter } from "./middleware/http/security"
 import { errorHandler } from "./middleware/http/errorHandler"
-import { socketConnectionLimiter } from "./middleware/socket/socketSecurity"
+import { socketAuthMiddleware, socketConnectionLimiter, withSocketThrottle } from "./middleware/socket/socketSecurity"
 
 const app = express()
 app.set("trust proxy", 1)
@@ -41,6 +41,7 @@ const httpServer = createServer(app)
 
 // Seguridad de WebSockets: Límite de conexiones por IP
 io.use(socketConnectionLimiter)
+io.use(socketAuthMiddleware)
 io.attach(httpServer, {
   cors: {
     origin: CORS_ORIGIN,
@@ -49,6 +50,18 @@ io.attach(httpServer, {
 })
 
 io.on("connection", (socket) => {
+  const socketUser = socket.data.user as { id: string; email: string } | undefined
+  if (socketUser?.id) {
+    socket.join(`user:${socketUser.id}`)
+  }
+
+  // Throttle any client-sent event bursts to reduce abuse surface.
+  socket.onAny(
+    withSocketThrottle(socket, () => {
+      return
+    }),
+  )
+
   console.log(`🔌 Client connected: ${socket.id}`)
   socket.on("disconnect", () => {
     console.log(`❌ Client disconnected: ${socket.id}`)

@@ -1,6 +1,23 @@
 import type { Request, Response } from "express"
 import * as incidentService from "../services/incidentsService"
 import { sendSuccess } from "../../../utils/responses"
+import { isSocketOwnedByUser } from "../../../socket"
+
+const getTrustedSocketId = (req: Request): string | undefined => {
+  const socketId = req.get("x-socket-id") || undefined
+  const userId = req.user?.id
+
+  if (!socketId || !userId) {
+    return undefined
+  }
+
+  if (!isSocketOwnedByUser(socketId, userId)) {
+    console.warn(`[API] Ignoring untrusted x-socket-id from user ${userId}`)
+    return undefined
+  }
+
+  return socketId
+}
 
 export const getIncidents = async (req: Request, res: Response): Promise<void> => {
   const page = Number(req.query.page) || 1
@@ -24,7 +41,7 @@ export const getIncidentById = async (req: Request, res: Response): Promise<void
 }
 
 export const createIncident = async (req: Request, res: Response): Promise<void> => {
-  const socketId = (req.get("x-socket-id") as string) || undefined
+  const socketId = getTrustedSocketId(req)
   console.log(`[API] createIncident received x-socket-id: ${socketId}`)
 
   // Add creatorId from authenticated user
@@ -39,7 +56,7 @@ export const createIncident = async (req: Request, res: Response): Promise<void>
 
 export const updateIncident = async (req: Request, res: Response): Promise<void> => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-  const socketId = (req.get("x-socket-id") as string) || undefined
+  const socketId = getTrustedSocketId(req)
   console.log(`[API] updateIncident received x-socket-id: ${socketId}`)
   const incident = await incidentService.updateIncident(id, req.body, socketId)
   sendSuccess(res, incident, "Incident updated successfully")
@@ -47,7 +64,7 @@ export const updateIncident = async (req: Request, res: Response): Promise<void>
 
 export const deleteIncident = async (req: Request, res: Response): Promise<void> => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-  const socketId = (req.get("x-socket-id") as string) || undefined
+  const socketId = getTrustedSocketId(req)
   console.log(`[API] deleteIncident received x-socket-id: ${socketId}`)
   await incidentService.deleteIncident(id, socketId)
   sendSuccess(res, null, "Incident deleted successfully", 204)

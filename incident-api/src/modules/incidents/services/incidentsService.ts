@@ -12,6 +12,33 @@ type IncidentFilters = {
   toDate?: string
 }
 
+type RealtimeIncidentPayload = {
+  id: string
+  title: string
+  description: string
+  status: string
+  priority: string
+  assignee: string
+  creatorId?: unknown
+  createdAt: Date | string
+}
+
+const buildRealtimeIncidentPayload = (incident: Incident): RealtimeIncidentPayload => {
+  const source = incident as unknown as Record<string, unknown>
+  const idValue = (source.id as string | undefined) || String(source._id)
+
+  return {
+    id: idValue,
+    title: String(source.title ?? ""),
+    description: String(source.description ?? ""),
+    status: String(source.status ?? "open"),
+    priority: String(source.priority ?? "low"),
+    assignee: String(source.assignee ?? ""),
+    creatorId: source.creatorId,
+    createdAt: (source.createdAt as Date | string | undefined) ?? new Date().toISOString(),
+  }
+}
+
 const buildIncidentQuery = (filters: IncidentFilters): Record<string, unknown> => {
   const query: Record<string, unknown> = {}
 
@@ -86,12 +113,13 @@ export const createIncident = async (
       ...data,
       status: "open",
     })
+    const payload = buildRealtimeIncidentPayload(saved)
     if (socketId) {
       console.log(`[WS] Emitting incident:created to ${io.engine.clientsCount} client(s) excluding ${socketId}`)
-      io.except(socketId).emit("incident:created", saved)
+      io.except(socketId).emit("incident:created", payload)
     } else {
       console.log(`[WS] Emitting incident:created to ${io.engine.clientsCount} client(s)`)
-      io.emit("incident:created", saved)
+      io.emit("incident:created", payload)
     }
     console.log("[WS] incident:created emitted")
     return saved
@@ -109,12 +137,13 @@ export const updateIncident = async (id: string, data: UpdateIncidentInput, sock
     if (!incident) {
       throw createAppError(404, `Incident with ID ${id} not found`)
     }
+    const payload = buildRealtimeIncidentPayload(incident)
     if (socketId) {
       console.log(`[WS] Emitting incident:updated to ${io.engine.clientsCount} client(s) excluding ${socketId}`)
-      io.except(socketId).emit("incident:updated", incident)
+      io.except(socketId).emit("incident:updated", payload)
     } else {
       console.log(`[WS] Emitting incident:updated to ${io.engine.clientsCount} client(s)`)
-      io.emit("incident:updated", incident)
+      io.emit("incident:updated", payload)
     }
     return incident
   } catch (error) {

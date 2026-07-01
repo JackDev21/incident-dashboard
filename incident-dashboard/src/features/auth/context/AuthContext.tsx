@@ -1,7 +1,8 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import type { ReactNode } from "react"
 import { authService } from "../services/auth.service"
 import type { User } from "../services/auth.service"
+import { disconnectSocket, refreshSocketAuth } from "@/features/incidents/services/socket"
 
 interface AuthContextType {
   user: User | null
@@ -18,6 +19,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(authService.getUser())
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated())
   const [isLoading] = useState(false)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshSocketAuth()
+    } else {
+      disconnectSocket()
+    }
+  }, [isAuthenticated])
 
   const register = async (name: string, email: string, password: string) => {
     await authService.register(name, email, password)
