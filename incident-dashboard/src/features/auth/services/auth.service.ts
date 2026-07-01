@@ -1,3 +1,5 @@
+import { httpRequest } from "@/lib/http/client"
+
 const USER_API_URL = `${import.meta.env.VITE_API_URL}/users`
 
 export interface User {
@@ -14,40 +16,24 @@ export interface AuthResponse {
 
 export const authService = {
   async register(name: string, email: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${USER_API_URL}/register`, {
+    const data = await httpRequest<AuthResponse>(`${USER_API_URL}/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, password }),
+      auth: false,
+      onUnauthorized: "throw",
+      body: { name, email, password },
     })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || "Registration failed")
-    }
-
-    const data: AuthResponse = await response.json()
     localStorage.setItem("auth_token", data.token)
     localStorage.setItem("auth_user", JSON.stringify(data.user))
     return data
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${USER_API_URL}/login`, {
+    const data = await httpRequest<AuthResponse>(`${USER_API_URL}/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
+      auth: false,
+      onUnauthorized: "throw",
+      body: { email, password },
     })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || "Login failed")
-    }
-
-    const data: AuthResponse = await response.json()
     localStorage.setItem("auth_token", data.token)
     localStorage.setItem("auth_user", JSON.stringify(data.user))
     return data

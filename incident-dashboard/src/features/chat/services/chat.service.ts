@@ -1,3 +1,5 @@
+import { httpRequest } from "@/lib/http/client"
+
 const BASE_URL = `${import.meta.env.VITE_API_URL}/chat`
 
 type AppliedFilters = {
@@ -8,11 +10,10 @@ type AppliedFilters = {
   toDate?: string
 } | null
 
-type ChatApiResponse = {
-  success?: boolean
-  data?: { answer: string; appliedFilters: AppliedFilters; action?: "created" | "updated" | null }
-  message?: string
-  error?: string
+type ChatData = {
+  answer: string
+  appliedFilters: AppliedFilters
+  action?: "created" | "updated" | null
 }
 
 type HistoryMessage = { role: "user" | "assistant"; content: string }
@@ -25,35 +26,14 @@ export const queryChat = async (
   selection?: { field: string; value: string },
   chatFilters?: AppliedFilters,
 ): Promise<ChatResult> => {
-  const token = localStorage.getItem("auth_token")
-  const headers: Record<string, string> = { "Content-Type": "application/json" }
-  if (token && token !== "undefined" && token !== "null") {
-    headers["Authorization"] = `Bearer ${token}`
-  }
-
-  const response = await fetch(`${BASE_URL}/query`, {
+  const payload = await httpRequest<ChatData>(`${BASE_URL}/query`, {
     method: "POST",
-    headers,
-    body: JSON.stringify({ question, history, selection, chatFilters }),
+    body: { question, history, selection, chatFilters },
   })
 
-  if (response.status === 401) {
-    // Token inválido o expirado - limpiar almacenamiento y redirigir
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_user")
-    window.location.href = "/login"
-    throw new Error("Session expired. Please login again")
-  }
-
-  const payload = (await response.json()) as ChatApiResponse
-
-  if (!response.ok) {
-    throw new Error(payload.error ?? payload.message ?? "Error querying chat")
-  }
-
   return {
-    answer: payload.data?.answer ?? "No response received.",
-    appliedFilters: payload.data?.appliedFilters ?? null,
-    action: payload.data?.action ?? null,
+    answer: payload.answer ?? "No response received.",
+    appliedFilters: payload.appliedFilters ?? null,
+    action: payload.action ?? null,
   }
 }
