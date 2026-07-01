@@ -4,6 +4,7 @@ import type { IncidentStatus } from "../types/incident.types"
 import { useToast } from "@/app/context/useToast"
 import type { Incident } from "../types/incident.types"
 import i18n from "@/i18n"
+import { incidentQueryKeys } from "../queryKeys"
 
 export const useIncidentDetails = (id: string | undefined) => {
   const queryClient = useQueryClient()
@@ -14,7 +15,7 @@ export const useIncidentDetails = (id: string | undefined) => {
     isLoading: loading,
     error,
   } = useQuery({
-    queryKey: ["incidents", id],
+    queryKey: incidentQueryKeys.detail(id!),
     queryFn: () => getIncidentById(id!),
     enabled: !!id,
   })
@@ -23,7 +24,8 @@ export const useIncidentDetails = (id: string | undefined) => {
     mutationFn: (status: IncidentStatus) => updateIncident(id!, { status }),
     onSuccess: (data: Incident) => {
       console.log("[Mutation] updateIncident success", data)
-      queryClient.invalidateQueries({ queryKey: ["incidents", id] })
+      queryClient.invalidateQueries({ queryKey: incidentQueryKeys.detail(id!) })
+      queryClient.invalidateQueries({ queryKey: incidentQueryKeys.lists() })
       showToast(i18n.t("toast.incidentUpdated"), "warning")
     },
   })

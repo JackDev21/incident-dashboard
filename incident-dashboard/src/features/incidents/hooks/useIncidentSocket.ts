@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { socket } from "../services/socket"
 import { useToast } from "@/app/context/useToast"
 import type { Incident, PaginatedIncidents } from "../types/incident.types"
+import { incidentQueryKeys } from "../queryKeys"
 
 export const useIncidentSocket = () => {
   const queryClient = useQueryClient()
@@ -13,7 +14,7 @@ export const useIncidentSocket = () => {
     const onCreated = (incident: Incident) => {
       console.log("[WS-hook] received event: incident:created", incident)
 
-      queryClient.setQueriesData({ queryKey: ["incidents"] }, (oldData: PaginatedIncidents | undefined) => {
+      queryClient.setQueriesData({ queryKey: incidentQueryKeys.lists() }, (oldData: PaginatedIncidents | undefined) => {
         if (!oldData) return oldData
         return {
           ...oldData,
@@ -29,7 +30,7 @@ export const useIncidentSocket = () => {
     const onUpdated = (incident: Incident) => {
       console.log("[WS-hook] received event: incident:updated", incident)
 
-      queryClient.setQueriesData({ queryKey: ["incidents"] }, (oldData: PaginatedIncidents | undefined) => {
+      queryClient.setQueriesData({ queryKey: incidentQueryKeys.lists() }, (oldData: PaginatedIncidents | undefined) => {
         if (!oldData) return oldData
         return {
           ...oldData,
@@ -37,13 +38,15 @@ export const useIncidentSocket = () => {
         }
       })
 
+      queryClient.setQueryData(incidentQueryKeys.detail(incident.id), incident)
+
       showToast("Incident updated", "warning")
     }
 
     const onDeleted = (payload: { id: string }) => {
       console.log("[WS-hook] received event: incident:deleted", payload)
 
-      queryClient.setQueriesData({ queryKey: ["incidents"] }, (oldData: PaginatedIncidents | undefined) => {
+      queryClient.setQueriesData({ queryKey: incidentQueryKeys.lists() }, (oldData: PaginatedIncidents | undefined) => {
         if (!oldData) return oldData
         return {
           ...oldData,
@@ -52,6 +55,8 @@ export const useIncidentSocket = () => {
           totalPages: Math.ceil(((oldData.total || 0) - 1) / 12),
         }
       })
+
+      queryClient.invalidateQueries({ queryKey: incidentQueryKeys.detail(payload.id) })
 
       showToast("Incident deleted", "danger")
     }

@@ -8,6 +8,7 @@ import { socket } from "../services/socket"
 import type { Incident } from "../types/incident.types"
 import { useTranslation } from "react-i18next"
 import styles from "@/features/incidents/pages/CreateIncidentPage.module.scss"
+import { incidentQueryKeys } from "../queryKeys"
 
 export const CreateIncidentPage = () => {
   const navigate = useNavigate()
@@ -24,7 +25,7 @@ export const CreateIncidentPage = () => {
     mutationFn: createIncident,
     onSuccess: (data: Incident) => {
       console.log("[Mutation] createIncident success", data)
-      queryClient.invalidateQueries({ queryKey: ["incidents"] })
+      queryClient.invalidateQueries({ queryKey: incidentQueryKeys.lists() })
       showToast(t("toast.incidentCreated"), "success")
       navigate("/incidents")
     },

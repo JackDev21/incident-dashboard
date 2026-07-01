@@ -4,6 +4,7 @@ import type { IncidentFiltersState } from "@/features/incidents/components/Incid
 import { useToast } from "@/app/context/useToast"
 import { useAuth } from "@/features/auth/context/AuthContext"
 import i18n from "@/i18n"
+import { incidentQueryKeys } from "../queryKeys"
 
 export const useIncidents = (page: number, filters: Partial<IncidentFiltersState> = {}) => {
   const queryClient = useQueryClient()
@@ -15,13 +16,13 @@ export const useIncidents = (page: number, filters: Partial<IncidentFiltersState
     isLoading: loading,
     error,
   } = useQuery({
-    queryKey: ["incidents", page, filters],
+    queryKey: incidentQueryKeys.list(page, filters),
     queryFn: () => getIncidents(page, 12, filters),
     enabled: isAuthenticated,
   })
 
   const { data: assignees = [] } = useQuery({
-    queryKey: ["incident-assignees"],
+    queryKey: incidentQueryKeys.assignees,
     queryFn: getAssignees,
     enabled: isAuthenticated,
   })
@@ -29,7 +30,7 @@ export const useIncidents = (page: number, filters: Partial<IncidentFiltersState
   const { mutate: removeIncident } = useMutation({
     mutationFn: deleteIncident,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["incidents"] })
+      queryClient.invalidateQueries({ queryKey: incidentQueryKeys.lists() })
       showToast(i18n.t("toast.incidentDeleted"), "danger")
     },
     onError: (error) => {
