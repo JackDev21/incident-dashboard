@@ -1,64 +1,38 @@
 import { Request, Response } from "express"
 import { UserService } from "./user.service"
-import { RegisterUserSchema, LoginUserSchema } from "./dtos/user.dto"
-import { ZodError } from "zod"
 import jwt from "jsonwebtoken"
 import { getJwtSecret } from "../../config"
+import type { LoginUserDTO, RegisterUserDTO } from "./dtos/user.dto"
 
 const userService = new UserService()
 
 export class UserController {
-  async register(req: Request, res: Response) {
-    try {
-      const validatedData = RegisterUserSchema.parse(req.body)
-      const user = await userService.createUser(validatedData)
+  register = async (req: Request, res: Response): Promise<void> => {
+    const validatedData = req.body as RegisterUserDTO
+    const user = await userService.createUser(validatedData)
 
-      const userId = (user as any)._id || user.id
-      const token = jwt.sign({ id: userId, email: user.email }, getJwtSecret(), { expiresIn: "24h" })
+    const userId = (user as any)._id || user.id
+    const token = jwt.sign({ id: userId, email: user.email }, getJwtSecret(), { expiresIn: "24h" })
 
-      const userResponse = { ...user }
-      delete userResponse.password
+    const userResponse = { ...user }
+    delete userResponse.password
 
-      return res.status(201).json({
-        message: "User registered successfully",
-        user: userResponse,
-        token,
-      })
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          message: error.issues.map((i) => i.message).join(", "),
-          errors: error.issues,
-        })
-      }
-      return res.status(400).json({
-        message: error.message || "Registration failed",
-        errors: error.errors,
-      })
-    }
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userResponse,
+      token,
+    })
   }
 
-  async login(req: Request, res: Response) {
-    try {
-      const validatedData = LoginUserSchema.parse(req.body)
-      const { user, token } = await userService.authenticateUser(validatedData.email, validatedData.password)
+  login = async (req: Request, res: Response): Promise<void> => {
+    const validatedData = req.body as LoginUserDTO
 
-      return res.status(200).json({
-        message: "Login successful",
-        user,
-        token,
-      })
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          message: error.issues.map((i) => i.message).join(", "),
-          errors: error.issues,
-        })
-      }
-      return res.status(401).json({
-        message: error.message || "Invalid credentials",
-      })
-    }
+    const { user, token } = await userService.authenticateUser(validatedData.email, validatedData.password)
+    res.status(200).json({
+      message: "Login successful",
+      user,
+      token,
+    })
   }
 }
 
