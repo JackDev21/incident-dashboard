@@ -16,6 +16,7 @@ This system allows users to:
 - **Filter and view incident details** in a user-friendly interface.
 - **Query and create incidents using natural language** via an AI-powered chat assistant integrated in the dashboard.
 - **Real-time updates** across all connected clients using WebSockets.
+- **Use authenticated access** for both REST API and WebSocket real-time channel.
 
 The architecture follows **best practices** for scalability, maintainability, and separation of concerns.
 
@@ -251,13 +252,19 @@ docker compose down
 
 ## 🧪 Testing
 
-Testing is a **planned feature** for this project. Both the **backend** and **frontend** will soon include:
+Testing is currently configured in the backend and planned for the frontend.
 
 ### Backend Testing (`incident-api`)
 
 - **Unit tests** for controllers and services.
 - **Integration tests** for API endpoints.
 - **Test coverage** to ensure reliability.
+
+Scripts:
+
+- `pnpm --dir incident-api test`
+- `pnpm --dir incident-api test:watch`
+- `pnpm --dir incident-api test:coverage`
 
 ### Frontend Testing (`incident-dashboard`)
 
@@ -288,7 +295,8 @@ Testing is a **planned feature** for this project. Both the **backend** and **fr
 
 ## 🛠️ Future Improvements
 
-- **Authentication**: Add user authentication (e.g., JWT).
+- **Frontend tests**: Add unit and integration tests for dashboard features.
+- **Performance**: Improve chunk splitting and reduce main bundle size.
 
 ---
 

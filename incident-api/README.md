@@ -97,6 +97,13 @@ All routes are served under the `/api` prefix.
 
 > `GET /api/incidents` supports optional query parameters: `?status=`, `?priority=`, `?assignee=`. The `assignee` filter is case-insensitive (`lorena` matches `Lorena`).
 
+`GET /api/incidents` also supports date range filters:
+
+- `fromDate=YYYY-MM-DD`
+- `toDate=YYYY-MM-DD`
+
+These values are applied against `createdAt`.
+
 ### Chat
 
 | Method | Endpoint          | Description                          | Request Body (JSON)      |
@@ -285,6 +292,7 @@ Coverage report output:
 - **Validation layer**: Input data (body and query parameters) is validated using Zod schemas before processing.
 - **Centralized error handling**: All errors are caught by a global middleware.
 - **Security**: Helmet is used for security headers, and express-rate-limit protects against DoS attacks and LLM API abuse.
+- **Authentication**: JWT is required for protected routes (`/api/incidents`, `/api/chat`) and for WebSocket handshake.
 - **Real-time**: Socket.io is used to broadcast incident changes to connected clients, with connection and message rate limiting.
 - **Type safety**: TypeScript is used for all layers with explicit interfaces.
 - **RESTful design**: API follows REST conventions (201 on create, 204 on delete).
@@ -295,7 +303,6 @@ Coverage report output:
 
 ## 🛠️ Future Improvements
 
-- **Authentication**: Add JWT-based authentication for secure endpoints.
 - **Swagger/OpenAPI**: Add API documentation using Swagger or OpenAPI.
 - **Structured Logging**: Expand structured logging for production monitoring.
 - **CI Automation**: Add CI pipeline checks for tests and coverage thresholds.
